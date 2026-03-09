@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Facturio
+Comment=Facturio empresarial
+Exec=Facturio
+Icon=Facturio
+Terminal=false
+Categories=Office;Finance;
+Keywords=faturação;faturas;invoice;billing;
+StartupWMClass=Facturio
