@@ -108,6 +108,39 @@ Resumo completo das alterações implementadas nesta entrega:
   - Teste `test/backup_service_e2e_test.dart` aprovado (`3/3`).
   - Verificação em Android sem `FATAL EXCEPTION`/`LateInitializationError` após as correções.
 
+### Registo Diário (11-03-2026)
+
+Alterações consolidadas ao longo do dia:
+
+- **Correções funcionais entregues**
+  - Ícone Android atualizado e validado no launcher.
+  - Fluxo de `Configurações da Empresa` voltou a abrir corretamente após validação por PIN.
+  - Importação de backups no mobile estabilizada (Android/iOS).
+- **Android (launcher/icon switching)**
+  - Ajustes em `android/app/src/main/AndroidManifest.xml` e manifests por variante (`debug`, `profile`, `release`).
+  - Integração nativa em `android/app/src/main/kotlin/pt/iefp/Facturio/MainActivity.kt` para aplicar variante de ícone.
+  - Recursos `ic_launcher` e variantes por densidade regenerados (`mipmap-*` e `drawable*`).
+- **iOS (alternate icons)**
+  - Plugin nativo adicionado em `ios/Runner/AppIconPlugin.swift` e registado em `ios/Runner/AppDelegate.swift`.
+  - Configuração de ícones alternativos em `ios/Runner/Info.plist`.
+  - Novos `AppIcon*.appiconset` para variantes (Business, Calculator, Chart, Documents, Money).
+- **Flutter/Dart**
+  - Serviço de ícones da app em `lib/core/services/app_icon_service.dart`.
+  - Mapeamentos/estado de temas e ícones em `lib/core/models/app_theme.dart`, `lib/core/providers/theme_provider.dart` e `lib/core/services/theme_service.dart`.
+  - UI de personalização atualizada em `lib/features/personalizacao/presentation/pages/personalizacao_page.dart`.
+  - Correção de inicialização lazy em `lib/core/services/admin_auth_service.dart` para evitar `LateInitializationError`.
+  - Robustez na importação em `lib/core/services/backup_service.dart`.
+- **Assets e tooling**
+  - Atualização de ícones em `assets/icons/*`, `web/favicon.png` e `favicon.ico`.
+  - Script `create_icons.py` expandido para gerar ícones primários e alternativos de forma consistente.
+- **Validação executada hoje**
+  - `flutter analyze` nos ficheiros críticos: sem issues.
+  - `flutter test test/backup_service_e2e_test.dart`: `3/3` testes passados.
+  - Verificação de logs Android (`adb logcat`): sem crash fatal da app no cenário corrigido.
+- **Commits do dia**
+  - `7e6e7a2` - `fix(mobile): corrigir ícones, backup import e acesso por PIN`
+  - `264d7ba` - `docs(readme): detalhar todas as alterações da entrega mobile`
+
 ## Requisitos
 
 - Flutter SDK (estável) instalado e configurado.
