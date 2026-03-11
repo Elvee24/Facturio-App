@@ -121,15 +121,19 @@ class PredefinedThemes {
 
 /// Ícones disponíveis para a aplicação.
 class AppIcon {
+  final String key;
   final String name;
   final String description;
-  final IconData icon;
+  final IconData? icon;
+  final String? assetPath;
   final Color color;
 
   const AppIcon({
+    required this.key,
     required this.name,
     required this.description,
-    required this.icon,
+    this.icon,
+    this.assetPath,
     required this.color,
   });
 }
@@ -138,38 +142,50 @@ class AppIcon {
 class PredefinedIcons {
   static const List<AppIcon> icons = [
     AppIcon(
-      name: 'Padrão',
+      key: 'official',
+      name: 'Oficial',
       description: 'Ícone oficial do Facturio',
+      assetPath: 'assets/icons/app_icon.svg',
       icon: Icons.receipt_long,
       color: Color(0xFF1976D2),
     ),
     AppIcon(
+      key: 'calculator',
       name: 'Calculadora',
       description: 'Ícone com calculadora',
+      assetPath: 'assets/icons/app_icon_calculator.svg',
       icon: Icons.calculate,
       color: Color(0xFF388E3C),
     ),
     AppIcon(
+      key: 'money',
       name: 'Dinheiro',
       description: 'Ícone com cifrão',
+      assetPath: 'assets/icons/app_icon_money.svg',
       icon: Icons.attach_money,
       color: Color(0xFFF57C00),
     ),
     AppIcon(
+      key: 'documents',
       name: 'Documentos',
       description: 'Ícone com documentos',
+      assetPath: 'assets/icons/app_icon_documents.svg',
       icon: Icons.description,
       color: Color(0xFF7B1FA2),
     ),
     AppIcon(
+      key: 'chart',
       name: 'Gráfico',
       description: 'Ícone com gráfico',
+      assetPath: 'assets/icons/app_icon_chart.svg',
       icon: Icons.trending_up,
       color: Color(0xFF0097A7),
     ),
     AppIcon(
+      key: 'business',
       name: 'Negócios',
       description: 'Ícone corporativo',
+      assetPath: 'assets/icons/app_icon_business.svg',
       icon: Icons.business_center,
       color: Color(0xFF303F9F),
     ),

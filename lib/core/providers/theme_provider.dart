@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/app_theme.dart';
+import '../services/app_icon_service.dart';
 import '../services/theme_service.dart';
 
 /// Notifier para gerenciar o estado do tema da aplicação.
@@ -14,6 +15,7 @@ class ThemeNotifier extends ChangeNotifier {
   int _appIconIndex = 0;
   bool _useMaterialYou = false;
   double _fontSize = 1.0;
+  String _appLanguage = 'pt';
 
   ThemeNotifier() {
     _loadPreferences();
@@ -28,6 +30,8 @@ class ThemeNotifier extends ChangeNotifier {
   int get appIconIndex => _appIconIndex;
   bool get useMaterialYou => _useMaterialYou;
   double get fontSize => _fontSize;
+  String get appLanguage => _appLanguage;
+  Locale get locale => Locale(_appLanguage);
 
   AppTheme get currentTheme => PredefinedThemes.getTheme(_predefinedThemeIndex);
   AppIcon get currentIcon => PredefinedIcons.getIcon(_appIconIndex);
@@ -42,6 +46,8 @@ class ThemeNotifier extends ChangeNotifier {
     _appIconIndex = ThemeService.getAppIconIndex();
     _useMaterialYou = ThemeService.isMaterialYouEnabled();
     _fontSize = ThemeService.getFontSize();
+    _appLanguage = ThemeService.getAppLanguage();
+    await AppIconService.syncLauncherIcon(currentIcon);
     notifyListeners();
   }
 
@@ -76,6 +82,7 @@ class ThemeNotifier extends ChangeNotifier {
   Future<void> setAppIcon(int index) async {
     _appIconIndex = index;
     await ThemeService.setAppIconIndex(index);
+    await AppIconService.syncLauncherIcon(currentIcon);
     notifyListeners();
   }
 
@@ -90,6 +97,13 @@ class ThemeNotifier extends ChangeNotifier {
   Future<void> setFontSize(double size) async {
     _fontSize = size;
     await ThemeService.setFontSize(size);
+    notifyListeners();
+  }
+
+  /// Define o idioma da aplicação.
+  Future<void> setAppLanguage(String languageCode) async {
+    _appLanguage = languageCode;
+    await ThemeService.setAppLanguage(languageCode);
     notifyListeners();
   }
 

@@ -15,6 +15,7 @@ class ThemeService {
   static const String _appIcon = 'app_icon';
   static const String _useMaterialYou = 'use_material_you';
   static const String _fontSize = 'font_size';
+  static const String _appLanguage = 'app_language';
 
   /// Inicializa o serviço de tema.
   static Future<void> init() async {
@@ -114,6 +115,18 @@ class ThemeService {
   /// Define o tamanho de fonte (escala).
   static Future<void> setFontSize(double size) async {
     await _box.put(_fontSize, size);
+  }
+
+  // ==================== IDIOMA ====================
+
+  /// Obtém o idioma da aplicação (ex.: 'pt', 'en').
+  static String getAppLanguage() {
+    return _box.get(_appLanguage, defaultValue: 'pt');
+  }
+
+  /// Define o idioma da aplicação.
+  static Future<void> setAppLanguage(String languageCode) async {
+    await _box.put(_appLanguage, languageCode);
   }
 
   // ==================== RESET ====================

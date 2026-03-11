@@ -76,6 +76,9 @@ Aplicação de faturação empresarial, desenvolvida em Flutter, com foco em pro
 - ✅ **Correção de erros de tipo no dashboard:** Corrigidos nomes de chaves no resumo de pagamentos (`faturasCompletamentePagas`, `faturasParcialmentePagas`).
 - ✅ **Compatibilidade Flutter 3.27+:** Corrigida depreciação de `Color.value` para `Color.toARGB32()`.
 - ✅ **Sistema de ícones instalável:** Script bash para instalação automática do ícone no ambiente Linux desktop.
+- ✅ **Ícones mobile atualizados:** Aplicação de ícones no Android e iOS com integração nativa (Android launcher aliases + iOS alternate icons).
+- ✅ **Importação de backup no mobile corrigida:** Seleção de ficheiros mais robusta em Android/iOS com validação de extensão no restauro.
+- ✅ **Correção de bloqueio nas Configurações da Empresa:** Inicialização segura do `AdminAuthService` para evitar `LateInitializationError` ao validar PIN.
 
 ## Requisitos
 
@@ -106,6 +109,8 @@ O projeto utiliza as seguintes dependências chave:
 Todas as dependências são instaladas automaticamente com `flutter pub get`.
 
 ## Instalação correta (passo a passo)
+
+Guia por sistema operativo (Linux, Windows, macOS, iOS, Android e Web): `INSTALACAO_MULTIPLATAFORMA.md`
 
 1. Entrar na pasta do projeto:
 
