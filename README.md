@@ -80,6 +80,34 @@ Aplicação de faturação empresarial, desenvolvida em Flutter, com foco em pro
 - ✅ **Importação de backup no mobile corrigida:** Seleção de ficheiros mais robusta em Android/iOS com validação de extensão no restauro.
 - ✅ **Correção de bloqueio nas Configurações da Empresa:** Inicialização segura do `AdminAuthService` para evitar `LateInitializationError` ao validar PIN.
 
+### Entrega Mobile (Março 2026)
+
+Resumo completo das alterações implementadas nesta entrega:
+
+- **Seleção e aplicação de ícones (Android/iOS):**
+  - Novo serviço dedicado para gestão de ícones da app (`AppIconService`).
+  - Android com integração nativa via `MethodChannel` em `MainActivity.kt`.
+  - Estratégia com `activity-alias` no Android para alternar o launcher icon por variante.
+  - iOS com plugin nativo (`AppIconPlugin.swift`) e registo no `AppDelegate`.
+  - `Info.plist` atualizado com `CFBundleAlternateIcons` para os ícones alternativos.
+- **Recursos de ícones atualizados:**
+  - Regeneração dos ícones primários (`ic_launcher`) e ícones alternativos em múltiplas densidades Android.
+  - Novos app iconsets no iOS para variantes (Business, Calculator, Chart, Documents, Money).
+  - Atualização de assets de ícones e favicons da app/web.
+  - Script `create_icons.py` expandido para gerar os recursos necessários de forma consistente.
+- **Importação de backups no mobile:**
+  - Ajustes no `BackupService` para seleção de ficheiro mais resiliente em Android/iOS.
+  - Fallback de picker e validação explícita de extensão antes de iniciar o restauro.
+  - Fluxo testado para reduzir falhas intermitentes na seleção de ficheiros em ambiente mobile.
+- **Configurações da Empresa / PIN admin:**
+  - Correção de crash por inicialização tardia no `AdminAuthService`.
+  - Introdução de inicialização lazy segura (`_ensureInitialized()`) antes de qualquer acesso às boxes Hive.
+  - Eliminação do `LateInitializationError` observado ao abrir área protegida por PIN.
+- **Validação técnica da entrega:**
+  - `flutter analyze` sem issues nos pontos críticos alterados.
+  - Teste `test/backup_service_e2e_test.dart` aprovado (`3/3`).
+  - Verificação em Android sem `FATAL EXCEPTION`/`LateInitializationError` após as correções.
+
 ## Requisitos
 
 - Flutter SDK (estável) instalado e configurado.
