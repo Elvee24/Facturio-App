@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-class AppLogo extends StatelessWidget {
+import '../../core/providers/theme_provider.dart';
+
+class AppLogo extends ConsumerWidget {
   final double size;
   final bool showText;
   final String? text;
@@ -14,29 +17,47 @@ class AppLogo extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (!showText) {
-      return SvgPicture.asset(
-        'assets/images/logo.svg',
-        width: size,
-        height: size,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedIcon = ref.watch(themeProvider).currentIcon;
+
+    Widget iconWidget() {
+      if (selectedIcon.assetPath != null) {
+        return SvgPicture.asset(
+          selectedIcon.assetPath!,
+          width: size,
+          height: size,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
+        );
+      }
+
+      return Icon(
+        selectedIcon.icon ?? Icons.receipt_long,
+        size: size,
+        color: selectedIcon.color,
       );
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SvgPicture.asset(
-          'assets/images/logo.svg',
-          width: size,
-          height: size,
-        ),
-        const SizedBox(width: 12),
-        Text(
-          text ?? 'Facturio',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-      ],
+    if (!showText) {
+      return Center(
+        child: iconWidget(),
+      );
+    }
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          iconWidget(),
+          const SizedBox(height: 10),
+          Text(
+            text ?? 'Facturio',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ],
+      ),
     );
   }
 }

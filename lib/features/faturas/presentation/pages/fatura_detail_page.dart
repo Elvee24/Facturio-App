@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/pagamentos_service.dart';
 import '../../../../core/services/pdf_service.dart';
 import '../../../../core/utils/ui_helpers.dart';
@@ -17,8 +19,13 @@ class FaturaDetailPage extends ConsumerWidget {
 
   const FaturaDetailPage({super.key, required this.faturaId});
 
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final faturasAsync = ref.watch(faturasProvider);
     final pagamentosAsync = ref.watch(pagamentosProvider);
@@ -29,17 +36,21 @@ class FaturaDetailPage extends ConsumerWidget {
       data: (faturas) {
         final fatura = faturas.firstWhere(
           (f) => f.id == faturaId,
-          orElse: () => throw Exception('Fatura não encontrada'),
+          orElse: () => throw Exception(_t(context, pt: 'Fatura não encontrada', en: 'Invoice not found')),
         );
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('Fatura ${fatura.numero}'),
+            title: Text('${_t(context, pt: 'Fatura', en: 'Invoice')} ${fatura.numero}'),
             actions: [
               IconButton(
                 icon: const Icon(Icons.print),
-                tooltip: 'Imprimir',
+                tooltip: _t(context, pt: 'Imprimir', en: 'Print'),
                 onPressed: () async {
+                  final dadosInsuficientes =
+                      _t(context, pt: 'Dados insuficientes', en: 'Insufficient data');
+                  final erroImprimir =
+                      _t(context, pt: 'Erro ao imprimir', en: 'Error printing');
                   try {
                     final cliente = await ref
                         .read(clientesProvider.notifier)
@@ -47,7 +58,7 @@ class FaturaDetailPage extends ConsumerWidget {
                     final config = ref.read(configuracoesProvider).value;
 
                     if (config == null || cliente == null) {
-                      throw Exception('Dados insuficientes');
+                      throw Exception(dadosInsuficientes);
                     }
 
                     await PdfService.imprimirFatura(fatura, cliente, config);
@@ -55,7 +66,7 @@ class FaturaDetailPage extends ConsumerWidget {
                     if (context.mounted) {
                       UiHelpers.mostrarSnackBar(
                         context,
-                        mensagem: 'Erro ao imprimir: $e',
+                        mensagem: '$erroImprimir: $e',
                         tipo: TipoSnackBar.erro,
                       );
                     }
@@ -64,8 +75,12 @@ class FaturaDetailPage extends ConsumerWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.share),
-                tooltip: 'Partilhar',
+                tooltip: _t(context, pt: 'Partilhar', en: 'Share'),
                 onPressed: () async {
+                  final dadosInsuficientes =
+                      _t(context, pt: 'Dados insuficientes', en: 'Insufficient data');
+                  final erroPartilhar =
+                      _t(context, pt: 'Erro ao partilhar', en: 'Error sharing');
                   try {
                     final cliente = await ref
                         .read(clientesProvider.notifier)
@@ -73,7 +88,7 @@ class FaturaDetailPage extends ConsumerWidget {
                     final config = ref.read(configuracoesProvider).value;
 
                     if (config == null || cliente == null) {
-                      throw Exception('Dados insuficientes');
+                      throw Exception(dadosInsuficientes);
                     }
 
                     await PdfService.compartilharFatura(fatura, cliente, config);
@@ -81,7 +96,7 @@ class FaturaDetailPage extends ConsumerWidget {
                     if (context.mounted) {
                       UiHelpers.mostrarSnackBar(
                         context,
-                        mensagem: 'Erro ao partilhar: $e',
+                        mensagem: '$erroPartilhar: $e',
                         tipo: TipoSnackBar.erro,
                       );
                     }
@@ -113,7 +128,7 @@ class FaturaDetailPage extends ConsumerWidget {
                   ref.invalidate(pagamentosProvider);
                 },
                 icon: const Icon(Icons.add),
-                label: const Text('Adicionar Pagamento'),
+                label: Text(_t(context, pt: 'Adicionar Pagamento', en: 'Add Payment')),
               );
             },
             loading: () => null,
@@ -137,7 +152,7 @@ class FaturaDetailPage extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Fatura ${fatura.numero}',
+                        '${_t(context, pt: 'Fatura', en: 'Invoice')} ${fatura.numero}',
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               color: colors.onPrimary,
                               fontWeight: FontWeight.bold,
@@ -178,9 +193,9 @@ class FaturaDetailPage extends ConsumerWidget {
                     padding: EdgeInsets.all(16),
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (error, stackTrace) => const Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('Erro ao carregar pagamentos'),
+                  error: (error, stackTrace) => Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(_t(context, pt: 'Erro ao carregar pagamentos', en: 'Error loading payments')),
                   ),
                 ),
 
@@ -193,21 +208,21 @@ class FaturaDetailPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Resumo Financeiro',
+                          _t(context, pt: 'Resumo Financeiro', en: 'Financial Summary'),
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const Divider(),
-                        _buildLinhaResumo('Subtotal', formatoMoeda.format(fatura.subtotal)),
-                        _buildLinhaResumo('IVA', formatoMoeda.format(fatura.totalIva)),
+                        _buildLinhaResumo(_t(context, pt: 'Subtotal', en: 'Subtotal'), formatoMoeda.format(fatura.subtotal)),
+                        _buildLinhaResumo('VAT', formatoMoeda.format(fatura.totalIva)),
                         if (fatura.retencaoFonte != null && fatura.retencaoFonte! > 0)
                           _buildLinhaResumo(
-                            'Retenção na Fonte',
+                            _t(context, pt: 'Retenção na Fonte', en: 'Withholding Tax'),
                             '- ${formatoMoeda.format(fatura.retencaoFonte)}',
                             color: Colors.red,
                           ),
                         const Divider(),
                         _buildLinhaResumo(
-                          'Total',
+                          _t(context, pt: 'Total', en: 'Total'),
                           formatoMoeda.format(fatura.totalComRetencao),
                           bold: true,
                         ),
@@ -225,7 +240,7 @@ class FaturaDetailPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Produtos/Serviços',
+                          _t(context, pt: 'Produtos/Serviços', en: 'Products/Services'),
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const Divider(),
@@ -240,7 +255,7 @@ class FaturaDetailPage extends ConsumerWidget {
                               contentPadding: EdgeInsets.zero,
                               title: Text(linha.produtoNome),
                               subtitle: Text(
-                                '${linha.quantidade} x ${formatoMoeda.format(linha.precoUnitario)} (IVA ${linha.iva}%)',
+                                '${linha.quantidade} x ${formatoMoeda.format(linha.precoUnitario)} (VAT ${linha.iva}%)',
                               ),
                               trailing: Text(
                                 formatoMoeda.format(linha.total),
@@ -273,7 +288,7 @@ class FaturaDetailPage extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Histórico de Pagamentos',
+                                  _t(context, pt: 'Histórico de Pagamentos', en: 'Payment History'),
                                   style: Theme.of(context).textTheme.titleLarge,
                                 ),
                                 Chip(
@@ -284,7 +299,7 @@ class FaturaDetailPage extends ConsumerWidget {
                             ),
                             const Divider(),
                             if (pagamentos.isEmpty)
-                              const Padding(
+                              Padding(
                                 padding: EdgeInsets.symmetric(vertical: 24),
                                 child: Center(
                                   child: Column(
@@ -292,7 +307,7 @@ class FaturaDetailPage extends ConsumerWidget {
                                       Icon(Icons.payment, size: 48, color: Colors.grey),
                                       SizedBox(height: 8),
                                       Text(
-                                        'Nenhum pagamento registado',
+                                        _t(context, pt: 'Nenhum pagamento registado', en: 'No payment recorded'),
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                     ],
@@ -327,7 +342,7 @@ class FaturaDetailPage extends ConsumerWidget {
                                         Text(formatoData.format(pagamento.dataPagamento)),
                                         if (pagamento.referencia != null)
                                           Text(
-                                            'Ref: ${pagamento.referencia}',
+                                            '${_t(context, pt: 'Ref', en: 'Ref')}: ${pagamento.referencia}',
                                             style: const TextStyle(fontSize: 12),
                                           ),
                                         if (pagamento.observacoes != null)
@@ -346,21 +361,25 @@ class FaturaDetailPage extends ConsumerWidget {
                                         final confirma = await showDialog<bool>(
                                           context: context,
                                           builder: (context) => AlertDialog(
-                                            title: const Text('Confirmar Remoção'),
+                                            title: Text(_t(context, pt: 'Confirmar Remoção', en: 'Confirm Removal')),
                                             content: Text(
-                                              'Deseja remover o pagamento de ${formatoMoeda.format(pagamento.valor)}?',
+                                              _t(
+                                                context,
+                                                pt: 'Deseja remover o pagamento de ${formatoMoeda.format(pagamento.valor)}?',
+                                                en: 'Do you want to remove the payment of ${formatoMoeda.format(pagamento.valor)}?',
+                                              ),
                                             ),
                                             actions: [
                                               TextButton(
                                                 onPressed: () => Navigator.pop(context, false),
-                                                child: const Text('Cancelar'),
+                                                child: Text(_t(context, pt: 'Cancelar', en: 'Cancel')),
                                               ),
                                               TextButton(
                                                 onPressed: () => Navigator.pop(context, true),
                                                 style: TextButton.styleFrom(
                                                   foregroundColor: Colors.red,
                                                 ),
-                                                child: const Text('Remover'),
+                                                child: Text(_t(context, pt: 'Remover', en: 'Remove')),
                                               ),
                                             ],
                                           ),
@@ -375,7 +394,7 @@ class FaturaDetailPage extends ConsumerWidget {
                                             if (context.mounted) {
                                               UiHelpers.mostrarSnackBar(
                                                 context,
-                                                mensagem: 'Pagamento removido com sucesso',
+                                                mensagem: _t(context, pt: 'Pagamento removido com sucesso', en: 'Payment removed successfully'),
                                                 tipo: TipoSnackBar.sucesso,
                                               );
                                             }
@@ -383,7 +402,7 @@ class FaturaDetailPage extends ConsumerWidget {
                                             if (context.mounted) {
                                               UiHelpers.mostrarSnackBar(
                                                 context,
-                                                mensagem: 'Erro ao remover pagamento: $e',
+                                                mensagem: '${_t(context, pt: 'Erro ao remover pagamento', en: 'Error removing payment')}: $e',
                                                 tipo: TipoSnackBar.erro,
                                               );
                                             }
@@ -408,9 +427,9 @@ class FaturaDetailPage extends ConsumerWidget {
                   ),
                   error: (error, stackTrace) => Card(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: const Padding(
+                    child: Padding(
                       padding: EdgeInsets.all(16),
-                      child: Text('Erro ao carregar histórico'),
+                      child: Text(_t(context, pt: 'Erro ao carregar histórico', en: 'Error loading history')),
                     ),
                   ),
                 ),
@@ -425,9 +444,9 @@ class FaturaDetailPage extends ConsumerWidget {
         body: Center(child: CircularProgressIndicator()),
       ),
       error: (error, _) => Scaffold(
-        appBar: AppBar(title: const Text('Erro')),
+        appBar: AppBar(title: Text(_t(context, pt: 'Erro', en: 'Error'))),
         body: Center(
-          child: Text('Erro ao carregar fatura: $error'),
+          child: Text('${_t(context, pt: 'Erro ao carregar fatura', en: 'Error loading invoice')}: $error'),
         ),
       ),
     );

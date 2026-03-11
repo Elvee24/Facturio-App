@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/fatura_legal_service.dart';
 import '../../../../core/utils/ui_helpers.dart';
 import '../../../../shared/models/linha_fatura.dart';
@@ -34,6 +36,10 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
   final _clienteMoradaController = TextEditingController();
   final _observacoesController = TextEditingController();
 
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
+
   @override
   void dispose() {
     _clienteNifController.dispose();
@@ -44,6 +50,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final clientesAsync = ref.watch(clientesProvider);
     final produtosAsync = ref.watch(produtosProvider);
@@ -57,7 +64,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nova Fatura'),
+        title: Text(_t(context, pt: 'Nova Fatura', en: 'New Invoice')),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -78,7 +85,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Emissão de Fatura',
+                    _t(context, pt: 'Emissão de Fatura', en: 'Invoice Issuance'),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: colors.onPrimary,
                           fontWeight: FontWeight.w700,
@@ -86,7 +93,11 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Selecione cliente, estado e adicione linhas de produto.',
+                    _t(
+                      context,
+                      pt: 'Selecione cliente, estado e adicione linhas de produto.',
+                      en: 'Select customer, status, and add product lines.',
+                    ),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colors.onPrimary.withValues(alpha: 0.9),
                         ),
@@ -105,11 +116,11 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                       data: (clientes) {
                         return DropdownButtonFormField<String>(
                           initialValue: _clienteSelecionadoId,
-                          decoration: const InputDecoration(
-                            labelText: 'Cliente *',
-                            prefixIcon: Icon(Icons.person),
+                          decoration: InputDecoration(
+                            labelText: _t(context, pt: 'Cliente *', en: 'Customer *'),
+                            prefixIcon: const Icon(Icons.person),
                           ),
-                          hint: const Text('Selecione um cliente'),
+                          hint: Text(_t(context, pt: 'Selecione um cliente', en: 'Select a customer')),
                           items: clientes.map((cliente) {
                             return DropdownMenuItem(
                               value: cliente.id,
@@ -126,14 +137,14 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                         );
                       },
                       loading: () => const LinearProgressIndicator(),
-                      error: (_, _) => const Text('Erro ao carregar clientes'),
+                      error: (_, _) => Text(_t(context, pt: 'Erro ao carregar clientes', en: 'Error loading customers')),
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: _estadoSelecionado,
-                      decoration: const InputDecoration(
-                        labelText: 'Estado',
-                        prefixIcon: Icon(Icons.info),
+                      decoration: InputDecoration(
+                        labelText: _t(context, pt: 'Estado', en: 'Status'),
+                        prefixIcon: const Icon(Icons.info),
                       ),
                       items: estadosDropdown.map((estado) {
                         return DropdownMenuItem(
@@ -159,16 +170,16 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Dados do Documento',
+                      _t(context, pt: 'Dados do Documento', en: 'Document Details'),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 16),
                     if (config != null)
                       DropdownButtonFormField<String>(
                         initialValue: _tipoDocumentoSelecionado,
-                        decoration: const InputDecoration(
-                          labelText: 'Tipo de Documento *',
-                          prefixIcon: Icon(Icons.description),
+                        decoration: InputDecoration(
+                          labelText: _t(context, pt: 'Tipo de Documento *', en: 'Document Type *'),
+                          prefixIcon: const Icon(Icons.description),
                         ),
                         items: config.tiposDocumento.map((tipo) {
                           return DropdownMenuItem(
@@ -185,10 +196,10 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: _clienteNifController,
-                      decoration: const InputDecoration(
-                        labelText: 'NIF do Cliente',
-                        prefixIcon: Icon(Icons.badge),
-                        helperText: '9 dígitos (opcional)',
+                      decoration: InputDecoration(
+                        labelText: _t(context, pt: 'NIF do Cliente', en: 'Customer Tax ID'),
+                        prefixIcon: const Icon(Icons.badge),
+                        helperText: _t(context, pt: '9 dígitos (opcional)', en: '9 digits (optional)'),
                       ),
                       keyboardType: TextInputType.number,
                       maxLength: 9,
@@ -196,9 +207,9 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: _clienteMoradaController,
-                      decoration: const InputDecoration(
-                        labelText: 'Morada do Cliente',
-                        prefixIcon: Icon(Icons.location_on),
+                      decoration: InputDecoration(
+                        labelText: _t(context, pt: 'Morada do Cliente', en: 'Customer Address'),
+                        prefixIcon: const Icon(Icons.location_on),
                       ),
                       maxLines: 2,
                     ),
@@ -206,11 +217,11 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     if (config != null)
                       DropdownButtonFormField<String>(
                         initialValue: _meioPagamentoSelecionado,
-                        decoration: const InputDecoration(
-                          labelText: 'Meio de Pagamento',
-                          prefixIcon: Icon(Icons.payment),
+                        decoration: InputDecoration(
+                          labelText: _t(context, pt: 'Meio de Pagamento', en: 'Payment Method'),
+                          prefixIcon: const Icon(Icons.payment),
                         ),
-                        hint: const Text('Selecione um meio de pagamento'),
+                        hint: Text(_t(context, pt: 'Selecione um meio de pagamento', en: 'Select a payment method')),
                         items: config.meiosPagamento.map((meio) {
                           return DropdownMenuItem(
                             value: meio,
@@ -227,7 +238,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     CheckboxListTile(
                       contentPadding: EdgeInsets.zero,
                       value: _aplicarRetencao,
-                      title: const Text('Aplicar Retenção na Fonte'),
+                      title: Text(_t(context, pt: 'Aplicar Retenção na Fonte', en: 'Apply Withholding Tax')),
                       subtitle: _aplicarRetencao
                           ? Text('${_percentagemRetencao.toStringAsFixed(1)}%')
                           : null,
@@ -253,12 +264,12 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       initialValue: _motivoIsencaoIVASelecionado,
-                      decoration: const InputDecoration(
-                        labelText: 'Motivo de Isenção de IVA',
-                        prefixIcon: Icon(Icons.discount),
-                        helperText: 'Apenas se aplicável',
+                      decoration: InputDecoration(
+                        labelText: _t(context, pt: 'Motivo de Isenção de IVA', en: 'VAT Exemption Reason'),
+                        prefixIcon: const Icon(Icons.discount),
+                        helperText: _t(context, pt: 'Apenas se aplicável', en: 'Only if applicable'),
                       ),
-                      hint: const Text('Nenhum'),
+                      hint: Text(_t(context, pt: 'Nenhum', en: 'None')),
                       items: AppConstants.motivosIsencaoIVA.map((motivo) {
                         return DropdownMenuItem(
                           value: motivo,
@@ -277,11 +288,11 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: _observacoesController,
-                      decoration: const InputDecoration(
-                        labelText: 'Observações',
-                        prefixIcon: Icon(Icons.note),
-                        helperText: 'Informações adicionais para a fatura',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: _t(context, pt: 'Observações', en: 'Notes'),
+                        prefixIcon: const Icon(Icons.note),
+                        helperText: _t(context, pt: 'Informações adicionais para a fatura', en: 'Additional information for the invoice'),
+                        border: const OutlineInputBorder(),
                       ),
                       maxLines: 3,
                     ),
@@ -289,7 +300,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                     OutlinedButton.icon(
                       onPressed: () => _mostrarDialogoProduto(produtosAsync.value ?? []),
                       icon: const Icon(Icons.add),
-                      label: const Text('Adicionar Produto'),
+                      label: Text(_t(context, pt: 'Adicionar Produto', en: 'Add Product')),
                     ),
                   ],
                 ),
@@ -297,15 +308,15 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Produtos/Serviços',
+              _t(context, pt: 'Produtos/Serviços', en: 'Products/Services'),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             if (_linhas.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('Nenhum produto adicionado'),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(_t(context, pt: 'Nenhum produto adicionado', en: 'No product added')),
                 ),
               )
             else
@@ -316,7 +327,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
                   child: ListTile(
                     title: Text(linha.produtoNome),
                     subtitle: Text(
-                      'Qtd: ${linha.quantidade} | €${linha.total.toStringAsFixed(2)}',
+                      '${_t(context, pt: 'Qtd', en: 'Qty')}: ${linha.quantidade} | €${linha.total.toStringAsFixed(2)}',
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
@@ -338,7 +349,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              label: const Text('Criar Fatura'),
+              label: Text(_t(context, pt: 'Criar Fatura', en: 'Create Invoice')),
             ),
           ],
         ),
@@ -353,12 +364,12 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Adicionar Produto'),
+        title: Text(_t(context, pt: 'Adicionar Produto', en: 'Add Product')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField(
-              hint: const Text('Selecione um produto'),
+              hint: Text(_t(context, pt: 'Selecione um produto', en: 'Select a product')),
               items: produtos.map((produto) {
                 return DropdownMenuItem(
                   value: produto.id,
@@ -372,8 +383,8 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
             const SizedBox(height: 16),
             TextField(
               controller: quantidadeController,
-              decoration: const InputDecoration(
-                labelText: 'Quantidade',
+              decoration: InputDecoration(
+                labelText: _t(context, pt: 'Quantidade', en: 'Quantity'),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
@@ -382,7 +393,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(_t(context, pt: 'Cancelar', en: 'Cancel')),
           ),
           TextButton(
             onPressed: () {
@@ -396,7 +407,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
               }
               Navigator.pop(context);
             },
-            child: const Text('Adicionar'),
+            child: Text(_t(context, pt: 'Adicionar', en: 'Add')),
           ),
         ],
       ),
@@ -422,7 +433,11 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
       if (clienteNif.isNotEmpty && !FaturaLegalService.validarNIF(clienteNif)) {
         UiHelpers.mostrarSnackBar(
           context,
-          mensagem: 'NIF do cliente inválido. Deve ter 9 dígitos válidos.',
+          mensagem: _t(
+            context,
+            pt: 'NIF do cliente inválido. Deve ter 9 dígitos válidos.',
+            en: 'Invalid customer tax ID. It must contain 9 valid digits.',
+          ),
           tipo: TipoSnackBar.erro,
         );
         return;
@@ -467,7 +482,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
       if (mounted) {
         UiHelpers.mostrarSnackBar(
           context,
-          mensagem: 'Fatura criada com sucesso',
+          mensagem: _t(context, pt: 'Fatura criada com sucesso', en: 'Invoice created successfully'),
           tipo: TipoSnackBar.sucesso,
         );
         context.pop();
@@ -476,7 +491,7 @@ class _FaturaFormPageState extends ConsumerState<FaturaFormPage> {
       if (mounted) {
         UiHelpers.mostrarSnackBar(
           context,
-          mensagem: 'Erro ao criar fatura: $e',
+          mensagem: '${_t(context, pt: 'Erro ao criar fatura', en: 'Error creating invoice')}: $e',
           tipo: TipoSnackBar.erro,
         );
       }

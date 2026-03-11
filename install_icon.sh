@@ -17,6 +17,7 @@ mkdir -p "$ICON_DIR/64x64/apps"
 mkdir -p "$ICON_DIR/128x128/apps"
 mkdir -p "$ICON_DIR/256x256/apps"
 mkdir -p "$ICON_DIR/512x512/apps"
+mkdir -p "$ICON_DIR/scalable/apps"
 mkdir -p "$DESKTOP_DIR"
 
 # Copiar ícones
@@ -28,6 +29,7 @@ cp "$BUNDLE_DIR/data/flutter_assets/assets/icons/icon-64.png" "$ICON_DIR/64x64/a
 cp "$BUNDLE_DIR/data/flutter_assets/assets/icons/icon-128.png" "$ICON_DIR/128x128/apps/Facturio.png"
 cp "$BUNDLE_DIR/data/flutter_assets/assets/icons/icon-256.png" "$ICON_DIR/256x256/apps/Facturio.png"
 cp "$BUNDLE_DIR/data/flutter_assets/assets/icons/icon-512.png" "$ICON_DIR/512x512/apps/Facturio.png"
+cp "$BUNDLE_DIR/data/flutter_assets/assets/icons/app_icon.svg" "$ICON_DIR/scalable/apps/Facturio.svg"
 
 # Copiar .desktop
 echo "📝 Instalando atalho na aplicação..."
@@ -35,6 +37,7 @@ cp linux/Facturio.desktop "$DESKTOP_DIR/Facturio.desktop"
 
 # Atualizar .desktop com caminho correto do executável
 sed -i "s|Exec=Facturio|Exec=$PWD/$BUNDLE_DIR/Facturio|" "$DESKTOP_DIR/Facturio.desktop"
+sed -i "s|Icon=Facturio|Icon=$ICON_DIR/scalable/apps/Facturio.svg|" "$DESKTOP_DIR/Facturio.desktop"
 
 # Atualizar cache de ícones
 echo "🔄 Atualizando cache de ícones..."

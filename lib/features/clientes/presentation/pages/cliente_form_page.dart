@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
+import '../../../../core/services/fatura_legal_service.dart';
 import '../../../../core/utils/ui_helpers.dart';
 import '../../domain/entities/cliente.dart';
 import '../providers/clientes_provider.dart';
@@ -25,6 +28,10 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
   bool _isLoading = false;
   bool _isEditMode = false;
   Cliente? _clienteOriginal;
+
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
 
   @override
   void initState() {
@@ -66,11 +73,16 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditMode ? 'Editar Cliente' : 'Novo Cliente'),
+        title: Text(
+          _isEditMode
+              ? _t(context, pt: 'Editar Cliente', en: 'Edit Customer')
+              : _t(context, pt: 'Novo Cliente', en: 'New Customer'),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -95,7 +107,9 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _isEditMode ? 'Atualizar Cliente' : 'Novo Cliente',
+                            _isEditMode
+                                ? _t(context, pt: 'Atualizar Cliente', en: 'Update Customer')
+                                : _t(context, pt: 'Novo Cliente', en: 'New Customer'),
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: colors.onPrimary,
                                   fontWeight: FontWeight.w700,
@@ -103,7 +117,11 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Preencha os dados para manter o cadastro organizado.',
+                            _t(
+                              context,
+                              pt: 'Preencha os dados para manter o cadastro organizado.',
+                              en: 'Fill in the details to keep records organized.',
+                            ),
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: colors.onPrimary.withValues(alpha: 0.9),
                                 ),
@@ -120,13 +138,13 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                           children: [
                             TextFormField(
                               controller: _nomeController,
-                              decoration: const InputDecoration(
-                                labelText: 'Nome *',
-                                prefixIcon: Icon(Icons.person),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Nome *', en: 'Name *'),
+                                prefixIcon: const Icon(Icons.person),
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Por favor, insira o nome';
+                                  return _t(context, pt: 'Por favor, insira o nome', en: 'Please enter a name');
                                 }
                                 return null;
                               },
@@ -134,17 +152,19 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _nifController,
-                              decoration: const InputDecoration(
-                                labelText: 'NIF *',
-                                prefixIcon: Icon(Icons.badge),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'NIF *', en: 'Tax ID *'),
+                                prefixIcon: const Icon(Icons.badge),
+                                helperText: _t(context, pt: '9 dígitos — pessoa singular (1,2,3), coletiva (5,6,7,8,9)', en: '9 digits — individual (1,2,3), company (5,6,7,8,9)'),
                               ),
                               keyboardType: TextInputType.number,
+                              maxLength: 9,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Por favor, insira o NIF';
+                                  return _t(context, pt: 'Por favor, insira o NIF', en: 'Please enter a tax ID');
                                 }
-                                if (value.length != 9) {
-                                  return 'NIF deve ter 9 dígitos';
+                                if (!FaturaLegalService.validarNIF(value.trim())) {
+                                  return _t(context, pt: 'NIF inválido. Verifique os 9 dígitos e o dígito de controlo.', en: 'Invalid tax ID. Check the 9 digits and check digit.');
                                 }
                                 return null;
                               },
@@ -152,14 +172,16 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: 'Email',
-                                prefixIcon: Icon(Icons.email),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Email', en: 'Email'),
+                                prefixIcon: const Icon(Icons.email),
+                                helperText: _t(context, pt: 'Exemplo: nome@empresa.pt', en: 'Example: name@company.com'),
                               ),
                               keyboardType: TextInputType.emailAddress,
                               validator: (value) {
-                                if (value != null && value.isNotEmpty && !value.contains('@')) {
-                                  return 'Email inválido';
+                                if (value == null || value.isEmpty) return null;
+                                if (!FaturaLegalService.validarEmail(value.trim())) {
+                                  return _t(context, pt: 'Email inválido. Use o formato nome@dominio.pt', en: 'Invalid email. Use format name@domain.com');
                                 }
                                 return null;
                               },
@@ -167,18 +189,24 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _telefoneController,
-                              decoration: const InputDecoration(
-                                labelText: 'Telefone',
-                                prefixIcon: Icon(Icons.phone),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Telefone', en: 'Phone'),
+                                prefixIcon: const Icon(Icons.phone),
+                                helperText: _t(context, pt: 'Exemplo: 912345678 ou +351212345678', en: 'Example: 912345678 or +351212345678'),
                               ),
                               keyboardType: TextInputType.phone,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return null;
+                                final r = FaturaLegalService.validarTelefoneComMensagem(value.trim());
+                                return r.valido ? null : _t(context, pt: r.erro!, en: r.erro!);
+                              },
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _moradaController,
-                              decoration: const InputDecoration(
-                                labelText: 'Morada',
-                                prefixIcon: Icon(Icons.location_on),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Morada', en: 'Address'),
+                                prefixIcon: const Icon(Icons.location_on),
                               ),
                               maxLines: 3,
                             ),
@@ -189,7 +217,11 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                               ),
-                              label: Text(_isEditMode ? 'Atualizar' : 'Criar Cliente'),
+                              label: Text(
+                                _isEditMode
+                                    ? _t(context, pt: 'Atualizar', en: 'Update')
+                                    : _t(context, pt: 'Criar Cliente', en: 'Create Customer'),
+                              ),
                             ),
                           ],
                         ),
@@ -235,7 +267,9 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
       if (mounted) {
         UiHelpers.mostrarSnackBar(
           context,
-          mensagem: _isEditMode ? 'Cliente atualizado com sucesso' : 'Cliente criado com sucesso',
+          mensagem: _isEditMode
+              ? _t(context, pt: 'Cliente atualizado com sucesso', en: 'Customer updated successfully')
+              : _t(context, pt: 'Cliente criado com sucesso', en: 'Customer created successfully'),
           tipo: TipoSnackBar.sucesso,
         );
         context.pop();
@@ -244,7 +278,7 @@ class _ClienteFormPageState extends ConsumerState<ClienteFormPage> {
       if (mounted) {
         UiHelpers.mostrarSnackBar(
           context,
-          mensagem: 'Erro ao salvar cliente: $e',
+          mensagem: '${_t(context, pt: 'Erro ao guardar cliente', en: 'Error saving customer')}: $e',
           tipo: TipoSnackBar.erro,
         );
       }

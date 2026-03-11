@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/utils/ui_helpers.dart';
 import '../providers/produtos_provider.dart';
 
@@ -16,8 +18,13 @@ class ProdutosListPage extends ConsumerStatefulWidget {
 class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
   String _searchQuery = '';
 
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final produtosAsync = ref.watch(produtosProvider);
     final produtosFiltrados = ref.watch(produtoSearchProvider(_searchQuery));
@@ -25,7 +32,7 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Produtos'),
+        title: Text(_t(context, pt: 'Produtos', en: 'Products')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -57,9 +64,9 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
                 children: [
                   Expanded(
                     child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Pesquisar produtos...',
-                        prefixIcon: Icon(Icons.search),
+                      decoration: InputDecoration(
+                        hintText: _t(context, pt: 'Pesquisar produtos...', en: 'Search products...'),
+                        prefixIcon: const Icon(Icons.search),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -85,8 +92,8 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
             child: produtosAsync.when(
               data: (produtos) {
                 if (produtosFiltrados.isEmpty) {
-                  return const Center(
-                    child: Text('Nenhum produto encontrado'),
+                  return Center(
+                    child: Text(_t(context, pt: 'Nenhum produto encontrado', en: 'No products found')),
                   );
                 }
                 
@@ -126,23 +133,26 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
                               ),
                             PopupMenuButton(
                               itemBuilder: (context) => [
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'editar',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.edit),
-                                      SizedBox(width: 8),
-                                      Text('Editar'),
+                                      const Icon(Icons.edit),
+                                      const SizedBox(width: 8),
+                                      Text(_t(context, pt: 'Editar', en: 'Edit')),
                                     ],
                                   ),
                                 ),
-                                const PopupMenuItem(
+                                PopupMenuItem(
                                   value: 'eliminar',
                                   child: Row(
                                     children: [
-                                      Icon(Icons.delete, color: Colors.red),
-                                      SizedBox(width: 8),
-                                      Text('Eliminar', style: TextStyle(color: Colors.red)),
+                                      const Icon(Icons.delete, color: Colors.red),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        _t(context, pt: 'Eliminar', en: 'Delete'),
+                                        style: const TextStyle(color: Colors.red),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -166,7 +176,9 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(child: Text('Erro: $error')),
+              error: (error, _) => Center(
+                child: Text('${_t(context, pt: 'Erro', en: 'Error')}: $error'),
+              ),
             ),
           ),
         ],
@@ -183,9 +195,13 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
   Future<void> _confirmarEliminar(BuildContext context, String id, String nome) async {
     final confirmado = await UiHelpers.mostrarDialogoConfirmacao(
       context,
-      titulo: 'Confirmar Eliminação',
-      mensagem: 'Tem a certeza de que deseja eliminar o produto "$nome"?',
-      textoBotaoConfirmar: 'Eliminar',
+      titulo: _t(context, pt: 'Confirmar Eliminação', en: 'Confirm Deletion'),
+      mensagem: _t(
+        context,
+        pt: 'Tem a certeza de que deseja eliminar o produto "$nome"?',
+        en: 'Are you sure you want to delete product "$nome"?',
+      ),
+      textoBotaoConfirmar: _t(context, pt: 'Eliminar', en: 'Delete'),
       acaoDestruidora: true,
     );
 
@@ -195,7 +211,7 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
         if (context.mounted) {
           UiHelpers.mostrarSnackBar(
             context,
-            mensagem: 'Produto eliminado com sucesso',
+            mensagem: _t(context, pt: 'Produto eliminado com sucesso', en: 'Product deleted successfully'),
             tipo: TipoSnackBar.sucesso,
           );
         }
@@ -203,7 +219,7 @@ class _ProdutosListPageState extends ConsumerState<ProdutosListPage> {
         if (context.mounted) {
           UiHelpers.mostrarSnackBar(
             context,
-            mensagem: 'Erro ao eliminar: $e',
+            mensagem: '${_t(context, pt: 'Erro ao eliminar', en: 'Error deleting')}: $e',
             tipo: TipoSnackBar.erro,
           );
         }

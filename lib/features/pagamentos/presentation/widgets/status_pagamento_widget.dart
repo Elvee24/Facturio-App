@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../../../core/i18n/app_text.dart';
 import '../../../../core/services/pagamentos_service.dart';
 import '../../../../shared/models/pagamento.dart';
 import '../../../faturas/domain/entities/fatura.dart';
 
 /// Widget que exibe o status visual de pagamento de uma fatura.
-/// 
-/// Mostra barra de progresso, percentagem e valores pagos/em dívida.
 class StatusPagamentoWidget extends StatelessWidget {
   final Fatura fatura;
   final List<Pagamento> pagamentos;
@@ -20,6 +19,9 @@ class StatusPagamentoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String t({required String pt, required String en}) =>
+        AppText.tr(context, pt: pt, en: en);
+
     final isPaga = PagamentosService.estaCompletamentePaga(fatura, pagamentos);
     final isParcial = PagamentosService.estaParcialmentePaga(fatura, pagamentos);
     final percentagem = PagamentosService.calcularPercentagemPaga(fatura, pagamentos);
@@ -34,15 +36,15 @@ class StatusPagamentoWidget extends StatelessWidget {
     if (isPaga) {
       corStatus = Colors.green;
       iconStatus = Icons.check_circle;
-      textoStatus = 'Paga';
+      textoStatus = t(pt: 'Paga', en: 'Paid');
     } else if (isParcial) {
       corStatus = Colors.orange;
       iconStatus = Icons.timelapse;
-      textoStatus = 'Parcial';
+      textoStatus = t(pt: 'Parcial', en: 'Partial');
     } else {
       corStatus = Colors.red;
       iconStatus = Icons.pending;
-      textoStatus = 'Não Paga';
+      textoStatus = t(pt: 'Não Paga', en: 'Unpaid');
     }
 
     if (compacto) {
@@ -63,7 +65,7 @@ class StatusPagamentoWidget extends StatelessWidget {
                     Icon(iconStatus, color: corStatus, size: 24),
                     const SizedBox(width: 8),
                     Text(
-                      'Status de Pagamento',
+                      t(pt: 'Status de Pagamento', en: 'Payment Status'),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ],
@@ -87,7 +89,6 @@ class StatusPagamentoWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // Barra de progresso
             Stack(
               children: [
                 Container(
@@ -125,21 +126,21 @@ class StatusPagamentoWidget extends StatelessWidget {
               children: [
                 _buildValorInfo(
                   context,
-                  'Total da Fatura',
+                  t(pt: 'Total da Fatura', en: 'Invoice Total'),
                   totalFatura,
                   Colors.blue,
                   Icons.receipt,
                 ),
                 _buildValorInfo(
                   context,
-                  'Valor Pago',
+                  t(pt: 'Valor Pago', en: 'Paid Amount'),
                   totalPago,
                   Colors.green,
                   Icons.check_circle_outline,
                 ),
                 _buildValorInfo(
                   context,
-                  'Em Dívida',
+                  t(pt: 'Em Dívida', en: 'Outstanding'),
                   valorEmDivida,
                   valorEmDivida > 0 ? Colors.orange : Colors.grey,
                   Icons.pending_actions,
@@ -154,7 +155,7 @@ class StatusPagamentoWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Pagamentos Registados',
+                    t(pt: 'Pagamentos Registados', en: 'Recorded Payments'),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   Container(

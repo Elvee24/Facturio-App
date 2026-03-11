@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/admin_auth_service.dart';
 import '../../../../core/services/backup_service.dart';
 import '../../../../core/services/storage_service.dart';
@@ -17,8 +19,13 @@ import '../../../pagamentos/presentation/providers/pagamentos_provider.dart';
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final clientesAsync = ref.watch(clientesProvider);
     final produtosAsync = ref.watch(produtosProvider);
@@ -31,7 +38,7 @@ class DashboardPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: Text(_t(context, pt: 'Dashboard', en: 'Dashboard')),
       ),
       drawer: _buildDrawer(context, ref),
       body: SingleChildScrollView(
@@ -57,7 +64,7 @@ class DashboardPage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Centro de Faturação',
+                    _t(context, pt: 'Centro de Faturação', en: 'Billing Center'),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: colors.onPrimary,
                           fontWeight: FontWeight.w700,
@@ -65,7 +72,11 @@ class DashboardPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Resumo rápido de clientes, produtos e faturação.',
+                    _t(
+                      context,
+                      pt: 'Resumo rápido de clientes, produtos e faturação.',
+                      en: 'Quick overview of customers, products, and billing.',
+                    ),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colors.onPrimary.withValues(alpha: 0.9),
                         ),
@@ -80,7 +91,7 @@ class DashboardPage extends ConsumerWidget {
                 Expanded(
                   child: _buildStatCard(
                     context,
-                    'Clientes',
+                    _t(context, pt: 'Clientes', en: 'Customers'),
                     clientesAsync.when(
                       data: (clientes) => clientes.length.toString(),
                       loading: () => '...',
@@ -95,7 +106,7 @@ class DashboardPage extends ConsumerWidget {
                 Expanded(
                   child: _buildStatCard(
                     context,
-                    'Produtos',
+                    _t(context, pt: 'Produtos', en: 'Products'),
                     produtosAsync.when(
                       data: (produtos) => produtos.length.toString(),
                       loading: () => '...',
@@ -114,7 +125,7 @@ class DashboardPage extends ConsumerWidget {
                 Expanded(
                   child: _buildStatCard(
                     context,
-                    'Faturas',
+                    _t(context, pt: 'Faturas', en: 'Invoices'),
                     faturasAsync.when(
                       data: (faturas) => faturas.length.toString(),
                       loading: () => '...',
@@ -129,7 +140,7 @@ class DashboardPage extends ConsumerWidget {
                 Expanded(
                   child: _buildStatCard(
                     context,
-                    'Total Faturado',
+                    _t(context, pt: 'Total Faturado', en: 'Total Invoiced'),
                     formatoMoeda.format(totalFaturado),
                     Icons.euro,
                     colors.secondary,
@@ -141,7 +152,7 @@ class DashboardPage extends ConsumerWidget {
             const SizedBox(height: 32),
             // Resumo Financeiro
             Text(
-              'Resumo Financeiro',
+              _t(context, pt: 'Resumo Financeiro', en: 'Financial Summary'),
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
@@ -155,11 +166,11 @@ class DashboardPage extends ConsumerWidget {
                       pagamentosPorFatura: pagamentosMap,
                     );
 
-                    final totalRecebido = resumo['totalRecebido'] as double;
-                    final totalEmDivida = resumo['totalEmDivida'] as double;
-                    final faturasPagas = resumo['faturasCompletamentePagas'] as int;
-                    final faturasNaoPagas = resumo['faturasNaoPagas'] as int;
-                    final faturasParciais = resumo['faturasParcialmentePagas'] as int;
+                    final totalRecebido = resumo.totalRecebido;
+                    final totalEmDivida = resumo.totalEmDivida;
+                    final faturasPagas = resumo.faturasCompletamentePagas;
+                    final faturasNaoPagas = resumo.faturasNaoPagas;
+                    final faturasParciais = resumo.faturasParcialmentePagas;
 
                     return Card(
                       child: Padding(
@@ -171,7 +182,7 @@ class DashboardPage extends ConsumerWidget {
                                 Expanded(
                                   child: _buildInfoTile(
                                     context,
-                                    'Total Recebido',
+                                    _t(context, pt: 'Total Recebido', en: 'Total Received'),
                                     formatoMoeda.format(totalRecebido),
                                     Icons.check_circle,
                                     Colors.green,
@@ -181,7 +192,7 @@ class DashboardPage extends ConsumerWidget {
                                 Expanded(
                                   child: _buildInfoTile(
                                     context,
-                                    'Em Dívida',
+                                    _t(context, pt: 'Em Dívida', en: 'Outstanding'),
                                     formatoMoeda.format(totalEmDivida),
                                     Icons.pending,
                                     Colors.orange,
@@ -196,17 +207,17 @@ class DashboardPage extends ConsumerWidget {
                               runSpacing: 8,
                               children: [
                                 _buildStatusChip(
-                                  'Pagas',
+                                  _t(context, pt: 'Pagas', en: 'Paid'),
                                   faturasPagas,
                                   Colors.green,
                                 ),
                                 _buildStatusChip(
-                                  'Parciais',
+                                  _t(context, pt: 'Parciais', en: 'Partial'),
                                   faturasParciais,
                                   Colors.orange,
                                 ),
                                 _buildStatusChip(
-                                  'Não Pagas',
+                                  _t(context, pt: 'Não Pagas', en: 'Unpaid'),
                                   faturasNaoPagas,
                                   Colors.red,
                                 ),
@@ -223,10 +234,10 @@ class DashboardPage extends ConsumerWidget {
                       child: Center(child: CircularProgressIndicator()),
                     ),
                   ),
-                  error: (error, stackTrace) => const Card(
+                  error: (error, stackTrace) => Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('Erro ao carregar pagamentos'),
+                      padding: const EdgeInsets.all(16),
+                      child: Text(_t(context, pt: 'Erro ao carregar pagamentos', en: 'Error loading payments')),
                     ),
                   ),
                 );
@@ -237,10 +248,10 @@ class DashboardPage extends ConsumerWidget {
                   child: Center(child: CircularProgressIndicator()),
                 ),
               ),
-              error: (error, stackTrace) => const Card(
+              error: (error, stackTrace) => Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('Erro ao carregar dados'),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(_t(context, pt: 'Erro ao carregar dados', en: 'Error loading data')),
                 ),
               ),
             ),
@@ -248,7 +259,7 @@ class DashboardPage extends ConsumerWidget {
             // Alertas de stock baixo
             if (produtosStockBaixo.isNotEmpty) ...[
               Text(
-                'Alertas',
+                _t(context, pt: 'Alertas', en: 'Alerts'),
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
@@ -256,8 +267,8 @@ class DashboardPage extends ConsumerWidget {
                 color: Colors.orange.shade50,
                 child: ListTile(
                   leading: const Icon(Icons.warning, color: Colors.orange),
-                  title: Text('${produtosStockBaixo.length} produtos com stock baixo'),
-                  subtitle: const Text('Clique para ver detalhes'),
+                  title: Text('${produtosStockBaixo.length} ${_t(context, pt: 'produtos com stock baixo', en: 'products with low stock')}'),
+                  subtitle: Text(_t(context, pt: 'Clique para ver detalhes', en: 'Click to view details')),
                   onTap: () => context.push(AppRoutes.produtos),
                 ),
               ),
@@ -266,7 +277,7 @@ class DashboardPage extends ConsumerWidget {
 
             // Últimas faturas
             Text(
-              'Últimas Faturas',
+              _t(context, pt: 'Últimas Faturas', en: 'Latest Invoices'),
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
@@ -274,10 +285,10 @@ class DashboardPage extends ConsumerWidget {
               data: (faturas) {
                 final ultimasFaturas = faturas.take(5).toList();
                 if (ultimasFaturas.isEmpty) {
-                  return const Card(
+                  return Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('Nenhuma fatura registada'),
+                      padding: const EdgeInsets.all(16),
+                      child: Text(_t(context, pt: 'Nenhuma fatura registada', en: 'No invoices recorded')),
                     ),
                   );
                 }
@@ -298,10 +309,10 @@ class DashboardPage extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, _) => const Card(
+              error: (_, _) => Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('Erro ao carregar faturas'),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(_t(context, pt: 'Erro ao carregar faturas', en: 'Error loading invoices')),
                 ),
               ),
             ),
@@ -456,7 +467,7 @@ class DashboardPage extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
+            title: Text(_t(context, pt: 'Dashboard', en: 'Dashboard')),
             onTap: () {
               Navigator.pop(context);
               context.go(AppRoutes.dashboard);
@@ -464,7 +475,7 @@ class DashboardPage extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.people),
-            title: const Text('Clientes'),
+            title: Text(_t(context, pt: 'Clientes', en: 'Customers')),
             onTap: () {
               Navigator.pop(context);
               context.push(AppRoutes.clientes);
@@ -472,7 +483,7 @@ class DashboardPage extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.inventory),
-            title: const Text('Produtos'),
+            title: Text(_t(context, pt: 'Produtos', en: 'Products')),
             onTap: () {
               Navigator.pop(context);
               context.push(AppRoutes.produtos);
@@ -480,7 +491,7 @@ class DashboardPage extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.receipt_long),
-            title: const Text('Faturas'),
+            title: Text(_t(context, pt: 'Faturas', en: 'Invoices')),
             onTap: () {
               Navigator.pop(context);
               context.push(AppRoutes.faturas);
@@ -489,8 +500,8 @@ class DashboardPage extends ConsumerWidget {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.palette),
-            title: const Text('Personalização'),
-            subtitle: const Text('Tema, cores e aparência'),
+            title: Text(_t(context, pt: 'Personalização', en: 'Customization')),
+            subtitle: Text(_t(context, pt: 'Tema, cores e aparência', en: 'Theme, colors, and appearance')),
             onTap: () {
               Navigator.pop(context);
               context.push(AppRoutes.personalizacao);
@@ -498,24 +509,20 @@ class DashboardPage extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.settings),
-            title: const Text('Configurações da Empresa'),
+            title: Text(_t(context, pt: 'Configurações da Empresa', en: 'Company Settings')),
             onTap: () async {
               Navigator.pop(context);
-              final cfg = ref.read(configuracoesProvider).maybeWhen(
-                    data: (value) => value,
-                    orElse: () => null,
-                  );
 
               final pinController = TextEditingController();
               final pin = await showDialog<String>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Acesso de Administrador'),
+                  title: Text(_t(context, pt: 'Acesso de Administrador', en: 'Administrator Access')),
                   content: TextField(
                     controller: pinController,
-                    decoration: const InputDecoration(
-                      labelText: 'PIN de administrador',
-                      prefixIcon: Icon(Icons.lock),
+                    decoration: InputDecoration(
+                      labelText: _t(context, pt: 'PIN de administrador', en: 'Administrator PIN'),
+                      prefixIcon: const Icon(Icons.lock),
                     ),
                     keyboardType: TextInputType.number,
                     obscureText: true,
@@ -525,11 +532,11 @@ class DashboardPage extends ConsumerWidget {
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.of(ctx).pop(),
-                      child: const Text('Cancelar'),
+                      child: Text(_t(context, pt: 'Cancelar', en: 'Cancel')),
                     ),
                     FilledButton(
                       onPressed: () => Navigator.of(ctx).pop(pinController.text.trim()),
-                      child: const Text('Entrar'),
+                      child: Text(_t(context, pt: 'Entrar', en: 'Enter')),
                     ),
                   ],
                 ),
@@ -539,41 +546,41 @@ class DashboardPage extends ConsumerWidget {
                 return;
               }
 
-              final pinHash = cfg?.adminPinHash ?? AdminAuthService.defaultPinHash;
-              if (!AdminAuthService.validarPin(pin, pinHash)) {
+              if (!await AdminAuthService.validarPin(pin)) {
+                if (!context.mounted) return;
                 UiHelpers.mostrarSnackBar(
                   context,
-                  mensagem: 'PIN de administrador inválido.',
+                  mensagem: _t(context, pt: 'PIN de administrador inválido.', en: 'Invalid administrator PIN.'),
                   tipo: TipoSnackBar.erro,
                 );
                 return;
               }
+
+              if (!context.mounted) return;
 
               context.push(AppRoutes.configuracoes);
             },
           ),
           const Divider(height: 1),
           ListTile(
-            leading: const Icon(Icons.backup),
-            title: const Text('Criar backup'),
-            subtitle: const Text('Guarde em Drive, cloud ou no PC'),
+            leading: const Icon(Icons.upload_file),
+            title: Text(_t(context, pt: 'Exportar dados', en: 'Export data')),
+            subtitle: Text(_t(context, pt: 'Clientes, produtos e faturas (JSON)', en: 'Customers, products, and invoices (JSON)')),
             onTap: () async {
               Navigator.pop(context);
               final storage = StorageService();
-              try {
-                await BackupService.partilharBackup(storage);
-                if (context.mounted) {
+              final resultado = await BackupService.exportarDadosAplicacao(storage);
+              if (context.mounted) {
+                if (resultado.sucesso) {
                   UiHelpers.mostrarSnackBar(
                     context,
-                    mensagem: 'Backup criado. Guarde o ficheiro partilhado em local seguro.',
+                    mensagem: resultado.mensagem,
                     tipo: TipoSnackBar.sucesso,
                   );
-                }
-              } catch (e) {
-                if (context.mounted) {
+                } else {
                   UiHelpers.mostrarSnackBar(
                     context,
-                    mensagem: 'Erro ao criar backup: $e',
+                    mensagem: resultado.mensagem,
                     tipo: TipoSnackBar.erro,
                   );
                 }
@@ -581,17 +588,39 @@ class DashboardPage extends ConsumerWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.restore),
-            title: const Text('Restaurar backup'),
-            subtitle: const Text('Substitui os dados atuais'),
+            leading: const Icon(Icons.folder_open),
+            title: Text(_t(context, pt: 'Abrir pasta de backups', en: 'Open backup folder')),
+            subtitle: Text(_t(context, pt: 'Abre a pasta onde os backups são guardados', en: 'Open the folder where backups are saved')),
+            onTap: () async {
+              Navigator.pop(context);
+              final cfg = ref.read(configuracoesProvider).maybeWhen(
+                    data: (value) => value,
+                    orElse: () => null,
+                  );
+              final abriu = await BackupService.abrirPastaBackups(cfg?.diretorioBackup);
+              if (context.mounted) {
+                UiHelpers.mostrarSnackBar(
+                  context,
+                  mensagem: abriu
+                      ? _t(context, pt: 'Pasta de backups aberta.', en: 'Backup folder opened.')
+                      : _t(context, pt: 'Não foi possível abrir a pasta de backups.', en: 'Could not open backup folder.'),
+                  tipo: abriu ? TipoSnackBar.sucesso : TipoSnackBar.erro,
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.download),
+            title: Text(_t(context, pt: 'Importar dados', en: 'Import data')),
+            subtitle: Text(_t(context, pt: 'Substitui clientes, produtos e faturas atuais', en: 'Replaces current customers, products, and invoices')),
             onTap: () async {
               Navigator.pop(context);
 
               final confirmar = await UiHelpers.mostrarDialogoConfirmacao(
                 context,
-                titulo: 'Restaurar backup',
-                mensagem: 'Esta ação vai substituir os dados atuais. Deseja continuar?',
-                textoBotaoConfirmar: 'Restaurar',
+                titulo: _t(context, pt: 'Importar dados', en: 'Import data'),
+                mensagem: _t(context, pt: 'Esta ação vai substituir os dados atuais de clientes, produtos e faturas. Deseja continuar?', en: 'This action will replace current customer, product, and invoice data. Continue?'),
+                textoBotaoConfirmar: _t(context, pt: 'Importar', en: 'Import'),
                 acaoDestruidora: true,
               );
 
@@ -599,12 +628,12 @@ class DashboardPage extends ConsumerWidget {
 
               final storage = StorageService();
               try {
-                final resultado = await BackupService.selecionarERestaurar(storage);
+                final resultado = await BackupService.importarDadosAplicacao(storage);
                 if (resultado == null) {
                   if (context.mounted) {
                     UiHelpers.mostrarSnackBar(
                       context,
-                      mensagem: 'Restauro cancelado.',
+                      mensagem: _t(context, pt: 'Importação cancelada.', en: 'Import cancelled.'),
                       tipo: TipoSnackBar.info,
                     );
                   }
@@ -619,15 +648,24 @@ class DashboardPage extends ConsumerWidget {
                   UiHelpers.mostrarSnackBar(
                     context,
                     mensagem:
-                        'Restauro concluído: ${resultado.clientes} clientes, ${resultado.produtos} produtos e ${resultado.faturas} faturas.',
+                        '${_t(context, pt: 'Importação concluída', en: 'Import completed')}: ${resultado.clientes} ${_t(context, pt: 'clientes', en: 'customers')}, ${resultado.produtos} ${_t(context, pt: 'produtos', en: 'products')} ${_t(context, pt: 'e', en: 'and')} ${resultado.faturas} ${_t(context, pt: 'faturas', en: 'invoices')}.',
                     tipo: TipoSnackBar.sucesso,
                   );
                 }
               } catch (e) {
+                if (!context.mounted) return;
+                final erro = e.toString();
+                final mensagem = erro.toLowerCase().contains('zenity')
+                    ? _t(
+                        context,
+                        pt: 'File picker indisponível no Linux sem zenity. Instale com: sudo apt install zenity',
+                        en: 'File picker unavailable on Linux without zenity. Install with: sudo apt install zenity',
+                      )
+                    : '${_t(context, pt: 'Erro ao importar dados', en: 'Error importing data')}: $e';
                 if (context.mounted) {
                   UiHelpers.mostrarSnackBar(
                     context,
-                    mensagem: 'Erro ao restaurar backup: $e',
+                    mensagem: mensagem,
                     tipo: TipoSnackBar.erro,
                   );
                 }

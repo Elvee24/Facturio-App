@@ -131,6 +131,7 @@ endif()
 
 # Install application icon
 set(ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../assets/icons/icon-128.png")
+set(SVG_ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../assets/icons/app_icon.svg")
 install(FILES "${ICON_FILE}" 
   DESTINATION "${CMAKE_INSTALL_PREFIX}"
   RENAME "app_icon.png"
@@ -141,6 +142,11 @@ if(NOT CMAKE_INSTALL_PREFIX STREQUAL "${BUILD_BUNDLE_DIR}")
   # Install desktop file
   install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/Facturio.desktop"
     DESTINATION "share/applications"
+    COMPONENT Runtime)
+
+  install(FILES "${SVG_ICON_FILE}"
+    DESTINATION "share/icons/hicolor/scalable/apps"
+    RENAME "Facturio.svg"
     COMPONENT Runtime)
   
   # Install application icon for system

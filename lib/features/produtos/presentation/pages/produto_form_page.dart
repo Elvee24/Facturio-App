@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/utils/ui_helpers.dart';
 import '../../../configuracoes/presentation/providers/configuracoes_provider.dart';
 import '../../domain/entities/produto.dart';
@@ -28,6 +30,10 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
   bool _isLoading = false;
   bool _isEditMode = false;
   Produto? _produtoOriginal;
+
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
 
   @override
   void initState() {
@@ -69,6 +75,7 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final config = ref.watch(configuracoesProvider).maybeWhen(
           data: (cfg) => cfg,
@@ -82,7 +89,11 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditMode ? 'Editar Produto' : 'Novo Produto'),
+        title: Text(
+          _isEditMode
+              ? _t(context, pt: 'Editar Produto', en: 'Edit Product')
+              : _t(context, pt: 'Novo Produto', en: 'New Product'),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -107,7 +118,9 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _isEditMode ? 'Atualizar Produto' : 'Novo Produto',
+                            _isEditMode
+                                ? _t(context, pt: 'Atualizar Produto', en: 'Update Product')
+                                : _t(context, pt: 'Novo Produto', en: 'New Product'),
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: colors.onPrimary,
                                   fontWeight: FontWeight.w700,
@@ -115,7 +128,11 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Defina preço, IVA e stock para manter a faturação correta.',
+                            _t(
+                              context,
+                              pt: 'Defina preço, IVA e stock para manter a faturação correta.',
+                              en: 'Set price, VAT, and stock to keep billing accurate.',
+                            ),
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: colors.onPrimary.withValues(alpha: 0.9),
                                 ),
@@ -132,13 +149,13 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                           children: [
                             TextFormField(
                               controller: _nomeController,
-                              decoration: const InputDecoration(
-                                labelText: 'Nome *',
-                                prefixIcon: Icon(Icons.inventory),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Nome *', en: 'Name *'),
+                                prefixIcon: const Icon(Icons.inventory),
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Por favor, insira o nome';
+                                  return _t(context, pt: 'Por favor, insira o nome', en: 'Please enter a name');
                                 }
                                 return null;
                               },
@@ -146,26 +163,26 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _descricaoController,
-                              decoration: const InputDecoration(
-                                labelText: 'Descrição',
-                                prefixIcon: Icon(Icons.description),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Descrição', en: 'Description'),
+                                prefixIcon: const Icon(Icons.description),
                               ),
                               maxLines: 3,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _precoController,
-                              decoration: const InputDecoration(
-                                labelText: 'Preço (€) *',
-                                prefixIcon: Icon(Icons.euro),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Preço (€) *', en: 'Price (€) *'),
+                                prefixIcon: const Icon(Icons.euro),
                               ),
                               keyboardType: const TextInputType.numberWithOptions(decimal: true),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Por favor, insira o preço';
+                                  return _t(context, pt: 'Por favor, insira o preço', en: 'Please enter a price');
                                 }
                                 if (double.tryParse(value) == null) {
-                                  return 'Preço inválido';
+                                  return _t(context, pt: 'Preço inválido', en: 'Invalid price');
                                 }
                                 return null;
                               },
@@ -173,9 +190,9 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                             const SizedBox(height: 16),
                             DropdownButtonFormField<double>(
                               initialValue: _ivaSelec,
-                              decoration: const InputDecoration(
-                                labelText: 'Taxa IVA',
-                                prefixIcon: Icon(Icons.percent),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Taxa IVA', en: 'VAT Rate'),
+                                prefixIcon: const Icon(Icons.percent),
                               ),
                               items: ivaDropdownOptions.map((iva) {
                                 return DropdownMenuItem(
@@ -192,9 +209,9 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                             const SizedBox(height: 16),
                             DropdownButtonFormField<String>(
                               initialValue: _unidadeSelecionada,
-                              decoration: const InputDecoration(
-                                labelText: 'Unidade',
-                                prefixIcon: Icon(Icons.straighten),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Unidade', en: 'Unit'),
+                                prefixIcon: const Icon(Icons.straighten),
                               ),
                               items: unidadeDropdownOptions.map((unidade) {
                                 return DropdownMenuItem(
@@ -211,17 +228,17 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _stockController,
-                              decoration: const InputDecoration(
-                                labelText: 'Stock *',
-                                prefixIcon: Icon(Icons.inventory_2),
+                              decoration: InputDecoration(
+                                labelText: _t(context, pt: 'Stock *', en: 'Stock *'),
+                                prefixIcon: const Icon(Icons.inventory_2),
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Por favor, insira o stock';
+                                  return _t(context, pt: 'Por favor, insira o stock', en: 'Please enter stock');
                                 }
                                 if (int.tryParse(value) == null) {
-                                  return 'Stock inválido';
+                                  return _t(context, pt: 'Stock inválido', en: 'Invalid stock value');
                                 }
                                 return null;
                               },
@@ -233,7 +250,11 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                               ),
-                              label: Text(_isEditMode ? 'Atualizar' : 'Criar Produto'),
+                              label: Text(
+                                _isEditMode
+                                    ? _t(context, pt: 'Atualizar', en: 'Update')
+                                    : _t(context, pt: 'Criar Produto', en: 'Create Product'),
+                              ),
                             ),
                           ],
                         ),
@@ -280,7 +301,9 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
       if (mounted) {
         UiHelpers.mostrarSnackBar(
           context,
-          mensagem: _isEditMode ? 'Produto atualizado com sucesso' : 'Produto criado com sucesso',
+          mensagem: _isEditMode
+              ? _t(context, pt: 'Produto atualizado com sucesso', en: 'Product updated successfully')
+              : _t(context, pt: 'Produto criado com sucesso', en: 'Product created successfully'),
           tipo: TipoSnackBar.sucesso,
         );
         context.pop();
@@ -289,7 +312,7 @@ class _ProdutoFormPageState extends ConsumerState<ProdutoFormPage> {
       if (mounted) {
         UiHelpers.mostrarSnackBar(
           context,
-          mensagem: 'Erro ao salvar produto: $e',
+          mensagem: '${_t(context, pt: 'Erro ao guardar produto', en: 'Error saving product')}: $e',
           tipo: TipoSnackBar.erro,
         );
       }

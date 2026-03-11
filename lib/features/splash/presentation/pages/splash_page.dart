@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/routes.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/tutorial_service.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateMixin {
+class _SplashPageState extends ConsumerState<SplashPage> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
@@ -63,9 +67,13 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final colors = Theme.of(context).colorScheme;
+    final selectedIcon = ref.watch(themeProvider).currentIcon;
     
     // Tamanho adaptativo do logo baseado no tamanho da tela
-    final logoSize = size.shortestSide * 0.45; // 45% da menor dimensão
+    final logoSize = (size.shortestSide * 0.34).clamp(130.0, 240.0).toDouble();
+    final topToIconSpacing = (size.height * 0.10).clamp(36.0, 92.0).toDouble();
+    final iconToTitleSpacing = (size.height * 0.035).clamp(20.0, 34.0).toDouble();
+    final titleToSubtitleSpacing = (size.height * 0.01).clamp(6.0, 12.0).toDouble();
 
     return Scaffold(
       body: Container(
@@ -88,86 +96,88 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                   opacity: _fadeAnimation,
                   child: ScaleTransition(
                     scale: _scaleAnimation,
-                    child: SingleChildScrollView(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: size.height,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Logo com tamanho adaptativo
-                            Container(
-                              width: logoSize,
-                              height: logoSize,
-                              padding: EdgeInsets.all(logoSize * 0.15),
-                              decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 30,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/icons/icon-512.png',
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                // Fallback para ícone material se a imagem não carregar
-                                return Icon(
-                                  Icons.receipt_long_rounded,
-                                  size: logoSize * 0.6,
-                                  color: colors.primary,
-                                );
-                              },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          SizedBox(height: topToIconSpacing),
+                          Container(
+                            width: logoSize,
+                            height: logoSize,
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.all(logoSize * 0.15),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: selectedIcon.assetPath != null
+                                  ? SvgPicture.asset(
+                                      selectedIcon.assetPath!,
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.center,
+                                      placeholderBuilder: (context) {
+                                        return Icon(
+                                          Icons.receipt_long_rounded,
+                                          size: logoSize * 0.6,
+                                          color: colors.primary,
+                                        );
+                                      },
+                                    )
+                                  : Icon(
+                                      selectedIcon.icon ?? Icons.receipt_long_rounded,
+                                      size: logoSize * 0.62,
+                                      color: selectedIcon.color,
+                                    ),
                             ),
                           ),
-                        ),
-                        
-                        SizedBox(height: size.height * 0.05),
-                        
-                        // Nome da app
-                        Text(
-                          'Facturio',
-                          style: TextStyle(
-                            fontSize: size.width * 0.12,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: 1.2,
+                          SizedBox(height: iconToTitleSpacing),
+                          Text(
+                            'Facturio',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: size.width * 0.12,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                        ),
-                        
-                        SizedBox(height: size.height * 0.01),
-                        
-                        // Subtítulo
-                        Text(
-                          'Sistema de Faturação',
-                          style: TextStyle(
-                            fontSize: size.width * 0.045,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.white.withValues(alpha: 0.9),
-                            letterSpacing: 0.5,
+                          SizedBox(height: titleToSubtitleSpacing),
+                          Text(
+                            AppText.tr(
+                              context,
+                              pt: 'Sistema de Faturação',
+                              en: 'Billing System',
+                            ),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: size.width * 0.045,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              letterSpacing: 0.5,
+                            ),
                           ),
-                        ),
-                        
-                        SizedBox(height: size.height * 0.08),
-                        
-                        // Loading indicator
-                        SizedBox(
-                          width: logoSize * 0.35,
-                          child: LinearProgressIndicator(
-                            backgroundColor: Colors.white.withValues(alpha: 0.3),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                            minHeight: 3,
-                            borderRadius: BorderRadius.circular(999),
+                          SizedBox(height: size.height * 0.08),
+                          SizedBox(
+                            width: logoSize * 0.35,
+                            child: LinearProgressIndicator(
+                              backgroundColor: Colors.white.withValues(alpha: 0.3),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                              minHeight: 3,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const Spacer(),
+                        ],
                       ),
                     ),
                   ),

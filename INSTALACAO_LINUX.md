@@ -1,11 +1,27 @@
 # Facturio - Instalação Linux
 
+> Para builds em Windows, macOS e iOS, consulte tambem: `INSTALACAO_MULTIPLATAFORMA.md`
+
 ## Instalação no Sistema
 
 Para instalar o Facturio no seu sistema Linux e adicionar ao menu de aplicações:
 
 ```bash
+sudo ./install.sh --system
+```
+
+Também é aceite sem flag:
+
+```bash
 sudo ./install.sh
+```
+
+## Instalação Apenas para o Utilizador Atual
+
+Para instalar sem sudo, apenas para a sua conta:
+
+```bash
+./install.sh --user
 ```
 
 Após a instalação:
@@ -18,7 +34,13 @@ Após a instalação:
 Para remover a aplicação do sistema:
 
 ```bash
-sudo ./uninstall.sh
+sudo ./uninstall.sh --system
+```
+
+Para remover apenas a instalação do utilizador atual:
+
+```bash
+./uninstall.sh --user
 ```
 
 ## Executar sem Instalar

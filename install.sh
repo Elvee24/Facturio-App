@@ -1,64 +1,109 @@
 #!/bin/bash
-# Script para instalar o Facturio no sistema
+# Script para instalar o Facturio no sistema ou apenas para o utilizador atual.
 
-set -e
+set -euo pipefail
 
 APP_NAME="Facturio"
-INSTALL_DIR="/opt/$APP_NAME"
 DESKTOP_FILE="$APP_NAME.desktop"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MODE="system"
 
-echo "🚀 Instalando Facturio..."
+usage() {
+    echo "Uso: ./install.sh [--system | --user]"
+    echo "  --system  Instala para todos os utilizadores (requer sudo)."
+    echo "  --user    Instala apenas para o utilizador atual."
+}
 
-# Verificar se é root
-if [ "$EUID" -ne 0 ]; then 
-    echo "❌ Por favor, execute como root (sudo)"
-    exit 1
+case "${1:-}" in
+    ""|--system)
+        MODE="system"
+        ;;
+    --user)
+        MODE="user"
+        ;;
+    --help|-h)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "❌ Opção inválida: ${1}"
+        usage
+        exit 1
+        ;;
+esac
+
+if [ "$MODE" = "system" ]; then
+    INSTALL_DIR="/opt/$APP_NAME"
+    APPLICATIONS_DIR="/usr/share/applications"
+    ICON_BASE_DIR="/usr/share/icons/hicolor"
+    if [ "$EUID" -ne 0 ]; then
+        echo "❌ Para instalação no sistema use sudo, ou execute: ./install.sh --user"
+        exit 1
+    fi
+else
+    INSTALL_DIR="$HOME/.local/opt/$APP_NAME"
+    APPLICATIONS_DIR="$HOME/.local/share/applications"
+    ICON_BASE_DIR="$HOME/.local/share/icons/hicolor"
 fi
 
-# Criar diretório de instalação
-echo "📁 Criando diretório de instalação..."
-mkdir -p "$INSTALL_DIR"
+BUNDLE_DIR="$SCRIPT_DIR/build/linux/x64/release/bundle"
+EXECUTABLE_PATH="$INSTALL_DIR/$APP_NAME"
+DESKTOP_PATH="$APPLICATIONS_DIR/$DESKTOP_FILE"
+ICON_48_DIR="$ICON_BASE_DIR/48x48/apps"
+ICON_128_DIR="$ICON_BASE_DIR/128x128/apps"
+ICON_256_DIR="$ICON_BASE_DIR/256x256/apps"
+ICON_SCALABLE_DIR="$ICON_BASE_DIR/scalable/apps"
 
-# Copiar arquivos da aplicação
-echo "📦 Copiando arquivos..."
-cp -r build/linux/x64/release/bundle/* "$INSTALL_DIR/"
+echo "🚀 Instalando Facturio ($MODE)..."
 
-# Tornar o executável executável
-chmod +x "$INSTALL_DIR/$APP_NAME"
+if [ ! -x "$BUNDLE_DIR/$APP_NAME" ]; then
+    echo "🔨 Build release não encontrado. A compilar..."
+    (
+        cd "$SCRIPT_DIR"
+        flutter build linux --release
+    )
+fi
 
-# Instalar ícones
+echo "📁 Criando diretórios de instalação..."
+mkdir -p "$INSTALL_DIR" "$APPLICATIONS_DIR" "$ICON_48_DIR" "$ICON_128_DIR" "$ICON_256_DIR" "$ICON_SCALABLE_DIR"
+
+echo "📦 Copiando arquivos da aplicação..."
+cp -r "$BUNDLE_DIR"/. "$INSTALL_DIR/"
+chmod +x "$EXECUTABLE_PATH"
+
 echo "🎨 Instalando ícones..."
-mkdir -p /usr/share/icons/hicolor/48x48/apps
-mkdir -p /usr/share/icons/hicolor/128x128/apps
-mkdir -p /usr/share/icons/hicolor/256x256/apps
+install -m 644 "$SCRIPT_DIR/assets/icons/icon-48.png" "$ICON_48_DIR/$APP_NAME.png"
+install -m 644 "$SCRIPT_DIR/assets/icons/icon-128.png" "$ICON_128_DIR/$APP_NAME.png"
+install -m 644 "$SCRIPT_DIR/assets/icons/icon-256.png" "$ICON_256_DIR/$APP_NAME.png"
+install -m 644 "$SCRIPT_DIR/assets/icons/app_icon.svg" "$ICON_SCALABLE_DIR/$APP_NAME.svg"
 
-cp assets/icons/icon-48.png /usr/share/icons/hicolor/48x48/apps/$APP_NAME.png
-cp assets/icons/icon-128.png /usr/share/icons/hicolor/128x128/apps/$APP_NAME.png
-cp assets/icons/icon-256.png /usr/share/icons/hicolor/256x256/apps/$APP_NAME.png
-
-# Criar arquivo desktop
 echo "📝 Criando entrada no menu..."
-cat > /usr/share/applications/$DESKTOP_FILE << EOF
+cat > "$DESKTOP_PATH" << EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=Facturio
 Comment=Facturio empresarial
-Exec=$INSTALL_DIR/$APP_NAME
-Icon=$APP_NAME
+Exec=$EXECUTABLE_PATH
+Icon=$ICON_SCALABLE_DIR/$APP_NAME.svg
 Terminal=false
 Categories=Office;Finance;
-Keywords=faturação;faturas;invoice;billing;
+Keywords=faturacao;faturas;invoice;billing;
 StartupWMClass=$APP_NAME
 EOF
+chmod 644 "$DESKTOP_PATH"
 
-# Atualizar cache de ícones
 echo "♻️  Atualizando cache..."
-gtk-update-icon-cache /usr/share/icons/hicolor/ -f || true
-update-desktop-database /usr/share/applications/ || true
+gtk-update-icon-cache "$ICON_BASE_DIR" -f || true
+update-desktop-database "$APPLICATIONS_DIR" || true
 
 echo ""
 echo "✅ Instalação concluída!"
-echo "📱 Você pode encontrar o Facturio no menu de aplicações."
-echo ""
-echo "Para desinstalar, execute: sudo rm -rf $INSTALL_DIR /usr/share/applications/$DESKTOP_FILE"
+echo "📱 Procure por Facturio no menu de aplicações."
+echo "📂 Executável: $EXECUTABLE_PATH"
+echo "📝 Launcher: $DESKTOP_PATH"
+if [ "$MODE" = "system" ]; then
+    echo "🗑️  Para desinstalar: sudo ./uninstall.sh"
+else
+    echo "🗑️  Para desinstalar: ./uninstall.sh --user"
+fi

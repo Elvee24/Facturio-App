@@ -1,6 +1,29 @@
 import '../../features/faturas/domain/entities/fatura.dart';
 import '../../shared/models/pagamento.dart';
 
+class ResumoFinanceiroPagamentos {
+  final double totalFaturado;
+  final double totalRecebido;
+  final double totalEmDivida;
+  final int faturasCompletamentePagas;
+  final int faturasParcialmentePagas;
+  final int faturasNaoPagas;
+
+  const ResumoFinanceiroPagamentos({
+    required this.totalFaturado,
+    required this.totalRecebido,
+    required this.totalEmDivida,
+    required this.faturasCompletamentePagas,
+    required this.faturasParcialmentePagas,
+    required this.faturasNaoPagas,
+  });
+
+  double get percentagemRecebida {
+    if (totalFaturado <= 0) return 0;
+    return (totalRecebido / totalFaturado) * 100;
+  }
+}
+
 /// Serviço responsável pela lógica de negócio de pagamentos.
 /// 
 /// Calcula valores, valida pagamentos e fornece análises financeiras.
@@ -87,7 +110,7 @@ class PagamentosService {
   }
 
   /// Gera resumo financeiro de pagamentos
-  static Map<String, dynamic> gerarResumoFinanceiro({
+  static ResumoFinanceiroPagamentos gerarResumoFinanceiro({
     required List<Fatura> faturas,
     required Map<String, List<Pagamento>> pagamentosPorFatura,
   }) {
@@ -120,15 +143,14 @@ class PagamentosService {
       }
     }
 
-    return {
-      'totalFaturado': totalFaturado,
-      'totalRecebido': totalRecebido,
-      'totalEmDivida': totalEmDivida,
-      'faturasCompletamentePagas': faturasCompletamentePagas,
-      'faturasParcialmentePagas': faturasParcialmentePagas,
-      'faturasNaoPagas': faturasNaoPagas,
-      'percentagemRecebida': totalFaturado > 0 ? (totalRecebido / totalFaturado) * 100 : 0,
-    };
+    return ResumoFinanceiroPagamentos(
+      totalFaturado: totalFaturado,
+      totalRecebido: totalRecebido,
+      totalEmDivida: totalEmDivida,
+      faturasCompletamentePagas: faturasCompletamentePagas,
+      faturasParcialmentePagas: faturasParcialmentePagas,
+      faturasNaoPagas: faturasNaoPagas,
+    );
   }
 
   /// Agrupa pagamentos por meio de pagamento

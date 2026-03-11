@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/pagamentos_service.dart';
 import '../../../../core/utils/ui_helpers.dart';
 import '../../../../shared/models/pagamento.dart';
@@ -35,6 +37,10 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
   DateTime _dataPagamento = DateTime.now();
   double _valorEmDivida = 0;
 
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +61,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final config = ref.watch(configuracoesProvider).value;
     final meiosPagamento = config?.meiosPagamento ?? AppConstants.meiosPagamento;
@@ -64,7 +71,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registar Pagamento'),
+        title: Text(_t(context, pt: 'Registar Pagamento', en: 'Record Payment')),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -88,7 +95,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Fatura ${widget.fatura.numero}',
+                      '${_t(context, pt: 'Fatura', en: 'Invoice')} ${widget.fatura.numero}',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: colors.onPrimary,
                             fontWeight: FontWeight.w700,
@@ -116,7 +123,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Total da Fatura:'),
+                          Text(_t(context, pt: 'Total da Fatura:', en: 'Invoice Total:')),
                           Text(
                             '€${totalFatura.toStringAsFixed(2)}',
                             style: const TextStyle(
@@ -149,9 +156,9 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Valor em Dívida:',
-                            style: TextStyle(
+                          Text(
+                            _t(context, pt: 'Valor em Dívida:', en: 'Outstanding Amount:'),
+                            style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -180,7 +187,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Dados do Pagamento',
+                        _t(context, pt: 'Dados do Pagamento', en: 'Payment Details'),
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 16),
@@ -188,20 +195,20 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       // Valor
                       TextFormField(
                         controller: _valorController,
-                        decoration: const InputDecoration(
-                          labelText: 'Valor do Pagamento *',
-                          prefixIcon: Icon(Icons.euro),
-                          helperText: 'Valor a registar neste pagamento',
+                        decoration: InputDecoration(
+                          labelText: _t(context, pt: 'Valor do Pagamento *', en: 'Payment Amount *'),
+                          prefixIcon: const Icon(Icons.euro),
+                          helperText: _t(context, pt: 'Valor a registar neste pagamento', en: 'Amount to record in this payment'),
                           suffixText: '€',
                         ),
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Campo obrigatório';
+                            return _t(context, pt: 'Campo obrigatório', en: 'Required field');
                           }
                           final valor = double.tryParse(value.replaceAll(',', '.'));
                           if (valor == null || valor <= 0) {
-                            return 'Valor inválido';
+                            return _t(context, pt: 'Valor inválido', en: 'Invalid amount');
                           }
                           final erro = PagamentosService.validarPagamento(
                             fatura: widget.fatura,
@@ -216,11 +223,11 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       // Meio de Pagamento
                       DropdownButtonFormField<String>(
                         initialValue: _meioPagamentoSelecionado,
-                        decoration: const InputDecoration(
-                          labelText: 'Meio de Pagamento *',
-                          prefixIcon: Icon(Icons.payment),
+                        decoration: InputDecoration(
+                          labelText: _t(context, pt: 'Meio de Pagamento *', en: 'Payment Method *'),
+                          prefixIcon: const Icon(Icons.payment),
                         ),
-                        hint: const Text('Selecione o meio de pagamento'),
+                        hint: Text(_t(context, pt: 'Selecione o meio de pagamento', en: 'Select payment method')),
                         items: meiosPagamento.map((meio) {
                           return DropdownMenuItem(
                             value: meio,
@@ -229,7 +236,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                         }).toList(),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Campo obrigatório';
+                            return _t(context, pt: 'Campo obrigatório', en: 'Required field');
                           }
                           return null;
                         },
@@ -245,7 +252,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.calendar_today),
-                        title: const Text('Data do Pagamento'),
+                        title: Text(_t(context, pt: 'Data do Pagamento', en: 'Payment Date')),
                         subtitle: Text(
                           DateFormat('dd/MM/yyyy').format(_dataPagamento),
                           style: const TextStyle(fontWeight: FontWeight.bold),
@@ -270,10 +277,10 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       // Referência
                       TextFormField(
                         controller: _referenciaController,
-                        decoration: const InputDecoration(
-                          labelText: 'Referência',
-                          prefixIcon: Icon(Icons.tag),
-                          helperText: 'Nº cheque, referência transferência, etc.',
+                        decoration: InputDecoration(
+                          labelText: _t(context, pt: 'Referência', en: 'Reference'),
+                          prefixIcon: const Icon(Icons.tag),
+                          helperText: _t(context, pt: 'Nº cheque, referência transferência, etc.', en: 'Check number, transfer reference, etc.'),
                         ),
                         maxLength: 50,
                       ),
@@ -282,11 +289,11 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                       // Observações
                       TextFormField(
                         controller: _observacoesController,
-                        decoration: const InputDecoration(
-                          labelText: 'Observações',
-                          prefixIcon: Icon(Icons.note),
+                        decoration: InputDecoration(
+                          labelText: _t(context, pt: 'Observações', en: 'Notes'),
+                          prefixIcon: const Icon(Icons.note),
                           alignLabelWithHint: true,
-                          border: OutlineInputBorder(),
+                          border: const OutlineInputBorder(),
                         ),
                         maxLines: 3,
                         maxLength: 500,
@@ -303,7 +310,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => context.pop(),
-                      child: const Text('Cancelar'),
+                      child: Text(_t(context, pt: 'Cancelar', en: 'Cancel')),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -312,7 +319,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
                     child: ElevatedButton.icon(
                       onPressed: _registarPagamento,
                       icon: const Icon(Icons.check),
-                      label: const Text('Registar Pagamento'),
+                      label: Text(_t(context, pt: 'Registar Pagamento', en: 'Record Payment')),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
@@ -352,7 +359,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
 
       UiHelpers.mostrarSnackBar(
         context,
-        mensagem: 'Pagamento registado com sucesso!',
+        mensagem: _t(context, pt: 'Pagamento registado com sucesso!', en: 'Payment recorded successfully!'),
         tipo: TipoSnackBar.sucesso,
       );
 
@@ -362,7 +369,7 @@ class _RegistarPagamentoPageState extends ConsumerState<RegistarPagamentoPage> {
 
       UiHelpers.mostrarSnackBar(
         context,
-        mensagem: 'Erro ao registar pagamento: $e',
+        mensagem: '${_t(context, pt: 'Erro ao registar pagamento', en: 'Error recording payment')}: $e',
         tipo: TipoSnackBar.erro,
       );
     }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/routes.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/utils/ui_helpers.dart';
 import '../providers/clientes_provider.dart';
 
@@ -15,15 +17,20 @@ class ClientesListPage extends ConsumerStatefulWidget {
 class _ClientesListPageState extends ConsumerState<ClientesListPage> {
   String _searchQuery = '';
 
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final clientesAsync = ref.watch(clientesProvider);
     final clientesFiltrados = ref.watch(clienteSearchProvider(_searchQuery));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Clientes'),
+        title: Text(_t(context, pt: 'Clientes', en: 'Customers')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -55,9 +62,9 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
                 children: [
                   Expanded(
                     child: TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Pesquisar clientes...',
-                        prefixIcon: Icon(Icons.search),
+                      decoration: InputDecoration(
+                        hintText: _t(context, pt: 'Pesquisar clientes...', en: 'Search customers...'),
+                        prefixIcon: const Icon(Icons.search),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -84,8 +91,8 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
             child: clientesAsync.when(
               data: (clientes) {
                 if (clientesFiltrados.isEmpty) {
-                  return const Center(
-                    child: Text('Nenhum cliente encontrado'),
+                  return Center(
+                    child: Text(_t(context, pt: 'Nenhum cliente encontrado', en: 'No customers found')),
                   );
                 }
                 
@@ -106,28 +113,31 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
                         ),
                         title: Text(cliente.nome),
                         subtitle: Text(
-                          'NIF: ${cliente.nif}\n${cliente.email.isEmpty ? 'Sem email' : cliente.email}',
+                          'NIF: ${cliente.nif}\n${cliente.email.isEmpty ? _t(context, pt: 'Sem email', en: 'No email') : cliente.email}',
                         ),
                         isThreeLine: true,
                         trailing: PopupMenuButton(
                           itemBuilder: (context) => [
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'editar',
                               child: Row(
                                 children: [
-                                  Icon(Icons.edit),
-                                  SizedBox(width: 8),
-                                  Text('Editar'),
+                                  const Icon(Icons.edit),
+                                  const SizedBox(width: 8),
+                                  Text(_t(context, pt: 'Editar', en: 'Edit')),
                                 ],
                               ),
                             ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'eliminar',
                               child: Row(
                                 children: [
-                                  Icon(Icons.delete, color: Colors.red),
-                                  SizedBox(width: 8),
-                                  Text('Eliminar', style: TextStyle(color: Colors.red)),
+                                  const Icon(Icons.delete, color: Colors.red),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _t(context, pt: 'Eliminar', en: 'Delete'),
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
                                 ],
                               ),
                             ),
@@ -150,7 +160,7 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => Center(
-                child: Text('Erro: $error'),
+                child: Text('${_t(context, pt: 'Erro', en: 'Error')}: $error'),
               ),
             ),
           ),
@@ -168,9 +178,13 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
   Future<void> _confirmarEliminar(BuildContext context, String id, String nome) async {
     final confirmado = await UiHelpers.mostrarDialogoConfirmacao(
       context,
-      titulo: 'Confirmar Eliminação',
-      mensagem: 'Tem a certeza de que deseja eliminar o cliente "$nome"?',
-      textoBotaoConfirmar: 'Eliminar',
+      titulo: _t(context, pt: 'Confirmar Eliminação', en: 'Confirm Deletion'),
+      mensagem: _t(
+        context,
+        pt: 'Tem a certeza de que deseja eliminar o cliente "$nome"?',
+        en: 'Are you sure you want to delete customer "$nome"?',
+      ),
+      textoBotaoConfirmar: _t(context, pt: 'Eliminar', en: 'Delete'),
       acaoDestruidora: true,
     );
 
@@ -180,7 +194,7 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
         if (context.mounted) {
           UiHelpers.mostrarSnackBar(
             context,
-            mensagem: 'Cliente eliminado com sucesso',
+            mensagem: _t(context, pt: 'Cliente eliminado com sucesso', en: 'Customer deleted successfully'),
             tipo: TipoSnackBar.sucesso,
           );
         }
@@ -188,7 +202,7 @@ class _ClientesListPageState extends ConsumerState<ClientesListPage> {
         if (context.mounted) {
           UiHelpers.mostrarSnackBar(
             context,
-            mensagem: 'Erro ao eliminar: $e',
+            mensagem: '${_t(context, pt: 'Erro ao eliminar', en: 'Error deleting')}: $e',
             tipo: TipoSnackBar.erro,
           );
         }

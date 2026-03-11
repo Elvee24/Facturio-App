@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
+import '../../../../core/i18n/app_text.dart';
+import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/pdf_service.dart';
 import '../../../../core/utils/ui_helpers.dart';
 import '../../../clientes/presentation/providers/clientes_provider.dart';
@@ -20,6 +22,10 @@ class FaturasListPage extends ConsumerStatefulWidget {
 
 class _FaturasListPageState extends ConsumerState<FaturasListPage> {
   String _searchTerm = '';
+
+  String _t(BuildContext context, {required String pt, required String en}) {
+    return AppText.tr(context, pt: pt, en: en);
+  }
 
   bool _matchesSearch(dynamic fatura, String searchTerm) {
     if (searchTerm.isEmpty) return true;
@@ -43,6 +49,7 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(themeProvider); // rebuild on language change
     final colors = Theme.of(context).colorScheme;
     final faturasAsync = ref.watch(faturasProvider);
     final formatoMoeda = NumberFormat.currency(locale: 'pt_PT', symbol: '€');
@@ -50,7 +57,7 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Faturas'),
+        title: Text(_t(context, pt: 'Faturas', en: 'Invoices')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -68,8 +75,8 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
             ..sort((a, b) => b.data.compareTo(a.data));
 
           if (faturas.isEmpty) {
-            return const Center(
-              child: Text('Nenhuma fatura registada'),
+            return Center(
+              child: Text(_t(context, pt: 'Nenhuma fatura registada', en: 'No invoices recorded')),
             );
           }
 
@@ -101,7 +108,7 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                             });
                           },
                           decoration: InputDecoration(
-                            hintText: 'Pesquisar por número ou cliente',
+                            hintText: _t(context, pt: 'Pesquisar por número ou cliente', en: 'Search by number or customer'),
                             prefixIcon: const Icon(Icons.search),
                             suffixIcon: _searchTerm.isEmpty
                                 ? null
@@ -128,9 +135,9 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                 ),
               ),
               if (faturasFiltradas.isEmpty)
-                const Expanded(
+                Expanded(
                   child: Center(
-                    child: Text('Nenhuma fatura para este filtro.'),
+                    child: Text(_t(context, pt: 'Nenhuma fatura para este filtro.', en: 'No invoices match this filter.')),
                   ),
                 )
               else
@@ -161,9 +168,9 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                         clipBehavior: Clip.antiAlias,
                         child: ExpansionTile(
                           leading: Icon(estadoIcon, color: estadoCor),
-                          title: Text('Fatura ${fatura.numero}'),
+                          title: Text('${_t(context, pt: 'Fatura', en: 'Invoice')} ${fatura.numero}'),
                           subtitle: Text(
-                            'Cliente: ${fatura.clienteNome}\n${formatoData.format(fatura.data)}',
+                            '${_t(context, pt: 'Cliente', en: 'Customer')}: ${fatura.clienteNome}\n${formatoData.format(fatura.data)}',
                           ),
                           trailing: Text(
                             formatoMoeda.format(fatura.total),
@@ -188,7 +195,7 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                                       borderRadius: BorderRadius.circular(999),
                                     ),
                                     child: Text(
-                                      'Estado: ${fatura.estado}',
+                                      '${_t(context, pt: 'Estado', en: 'Status')}: ${fatura.estado}',
                                       style: TextStyle(
                                         color: estadoCor,
                                         fontWeight: FontWeight.w600,
@@ -196,9 +203,9 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text('Produtos: ${fatura.linhas.length}'),
-                                  Text('Subtotal: ${formatoMoeda.format(fatura.subtotal)}'),
-                                  Text('IVA: ${formatoMoeda.format(fatura.totalIva)}'),
+                                  Text('${_t(context, pt: 'Produtos', en: 'Products')}: ${fatura.linhas.length}'),
+                                  Text('${_t(context, pt: 'Subtotal', en: 'Subtotal')}: ${formatoMoeda.format(fatura.subtotal)}'),
+                                  Text('${_t(context, pt: 'IVA', en: 'VAT')}: ${formatoMoeda.format(fatura.totalIva)}'),
                                   const SizedBox(height: 12),
                                   
                                   // Status de Pagamento
@@ -241,7 +248,7 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                                           context.push('${AppRoutes.faturaDetail}?id=${fatura.id}');
                                         },
                                         icon: const Icon(Icons.visibility),
-                                        label: const Text('Ver Detalhes'),
+                                        label: Text(_t(context, pt: 'Ver Detalhes', en: 'View Details')),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: colors.primary,
                                           foregroundColor: colors.onPrimary,
@@ -267,14 +274,14 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                                             if (context.mounted) {
                                               UiHelpers.mostrarSnackBar(
                                                 context,
-                                                mensagem: 'Erro ao imprimir: $e',
+                                                mensagem: '${_t(context, pt: 'Erro ao imprimir', en: 'Error printing')}: $e',
                                                 tipo: TipoSnackBar.erro,
                                               );
                                             }
                                           }
                                         },
                                         icon: const Icon(Icons.print),
-                                        label: const Text('Imprimir'),
+                                        label: Text(_t(context, pt: 'Imprimir', en: 'Print')),
                                       ),
                                       TextButton.icon(
                                         onPressed: () async {
@@ -295,14 +302,14 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                                             if (context.mounted) {
                                               UiHelpers.mostrarSnackBar(
                                                 context,
-                                                mensagem: 'Erro ao partilhar: $e',
+                                                mensagem: '${_t(context, pt: 'Erro ao partilhar', en: 'Error sharing')}: $e',
                                                 tipo: TipoSnackBar.erro,
                                               );
                                             }
                                           }
                                         },
                                         icon: const Icon(Icons.share),
-                                        label: const Text('Partilhar PDF'),
+                                        label: Text(_t(context, pt: 'Partilhar PDF', en: 'Share PDF')),
                                       ),
                                       TextButton.icon(
                                         onPressed: () async {
@@ -327,14 +334,14 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
                                             if (context.mounted) {
                                               UiHelpers.mostrarSnackBar(
                                                 context,
-                                                mensagem: 'Erro ao exportar: $e',
+                                                mensagem: '${_t(context, pt: 'Erro ao exportar', en: 'Error exporting')}: $e',
                                                 tipo: TipoSnackBar.erro,
                                               );
                                             }
                                           }
                                         },
                                         icon: const Icon(Icons.grid_on),
-                                        label: const Text('Excel'),
+                                        label: Text(_t(context, pt: 'Excel', en: 'Excel')),
                                       ),
                                     ],
                                   ),
@@ -351,7 +358,9 @@ class _FaturasListPageState extends ConsumerState<FaturasListPage> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erro: $error')),
+        error: (error, _) => Center(
+          child: Text('${_t(context, pt: 'Erro', en: 'Error')}: $error'),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

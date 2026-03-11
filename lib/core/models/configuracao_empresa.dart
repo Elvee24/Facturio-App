@@ -30,6 +30,9 @@ class ConfiguracaoEmpresa {
   final List<String> tiposDocumento; // Fatura, Fatura Simplificada, etc.
   final String serieAtual; // Série de documentos atual
   
+  // Configurações de backup
+  final String? diretorioBackup; // Diretório de backup escolhido pelo utilizador
+  
   // Segurança
   final String adminPinHash;
 
@@ -54,6 +57,7 @@ class ConfiguracaoEmpresa {
     required this.meiosPagamento,
     required this.tiposDocumento,
     required this.serieAtual,
+    this.diretorioBackup,
     required this.adminPinHash,
   });
 
@@ -79,6 +83,7 @@ class ConfiguracaoEmpresa {
       meiosPagamento: AppConstants.meiosPagamento,
       tiposDocumento: AppConstants.tiposDocumento,
       serieAtual: 'A',
+      diretorioBackup: null,
       adminPinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
     );
   }
@@ -104,6 +109,7 @@ class ConfiguracaoEmpresa {
     List<String>? meiosPagamento,
     List<String>? tiposDocumento,
     String? serieAtual,
+    String? diretorioBackup,
     String? adminPinHash,
   }) {
     return ConfiguracaoEmpresa(
@@ -127,6 +133,7 @@ class ConfiguracaoEmpresa {
       meiosPagamento: meiosPagamento ?? this.meiosPagamento,
       tiposDocumento: tiposDocumento ?? this.tiposDocumento,
       serieAtual: serieAtual ?? this.serieAtual,
+      diretorioBackup: diretorioBackup ?? this.diretorioBackup,
       adminPinHash: adminPinHash ?? this.adminPinHash,
     );
   }
@@ -153,6 +160,7 @@ class ConfiguracaoEmpresa {
       'meiosPagamento': meiosPagamento,
       'tiposDocumento': tiposDocumento,
       'serieAtual': serieAtual,
+      'diretorioBackup': diretorioBackup,
       'adminPinHash': adminPinHash,
     };
   }
@@ -216,6 +224,7 @@ class ConfiguracaoEmpresa {
       tiposDocumento:
           tiposDocumento.isEmpty ? [...AppConstants.tiposDocumento] : tiposDocumento,
       serieAtual: (json['serieAtual'] as String?)?.trim() ?? 'A',
+      diretorioBackup: (json['diretorioBackup'] as String?)?.trim(),
       adminPinHash: (json['adminPinHash'] as String?)?.trim().isNotEmpty == true
           ? (json['adminPinHash'] as String)
           : AdminAuthService.defaultPinHash,

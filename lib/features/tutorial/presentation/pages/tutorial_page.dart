@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../app/routes.dart';
+import '../../../../core/i18n/app_text.dart';
 import '../../../../core/services/tutorial_service.dart';
 import '../../data/tutorial_slides.dart';
 
@@ -43,7 +44,7 @@ class _TutorialPageState extends State<TutorialPage> {
   }
 
   void _nextPage() {
-    if (_currentPage < TutorialSlides.slides.length - 1) {
+    if (_currentPage < TutorialSlides.slides(context).length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -64,8 +65,12 @@ class _TutorialPageState extends State<TutorialPage> {
 
   @override
   Widget build(BuildContext context) {
+    String t({required String pt, required String en}) =>
+        AppText.tr(context, pt: pt, en: en);
+
+    final slides = TutorialSlides.slides(context);
     final colors = Theme.of(context).colorScheme;
-    final isLastPage = _currentPage == TutorialSlides.slides.length - 1;
+    final isLastPage = _currentPage == slides.length - 1;
 
     return Scaffold(
       body: SafeArea(
@@ -95,7 +100,7 @@ class _TutorialPageState extends State<TutorialPage> {
                   if (!isLastPage)
                     TextButton(
                       onPressed: _skipTutorial,
-                      child: const Text('Pular'),
+                      child: Text(t(pt: 'Pular', en: 'Skip')),
                     ),
                 ],
               ),
@@ -106,9 +111,9 @@ class _TutorialPageState extends State<TutorialPage> {
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: _onPageChanged,
-                itemCount: TutorialSlides.slides.length,
+                itemCount: slides.length,
                 itemBuilder: (context, index) {
-                  final slide = TutorialSlides.slides[index];
+                  final slide = slides[index];
                   return _buildSlide(context, slide);
                 },
               ),
@@ -120,7 +125,7 @@ class _TutorialPageState extends State<TutorialPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
-                  TutorialSlides.slides.length,
+                  slides.length,
                   (index) => _buildPageIndicator(index, colors),
                 ),
               ),
@@ -137,7 +142,7 @@ class _TutorialPageState extends State<TutorialPage> {
                     OutlinedButton.icon(
                       onPressed: _previousPage,
                       icon: const Icon(Icons.arrow_back),
-                      label: const Text('Voltar'),
+                      label: Text(t(pt: 'Voltar', en: 'Back')),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
@@ -152,7 +157,7 @@ class _TutorialPageState extends State<TutorialPage> {
                   ElevatedButton.icon(
                     onPressed: _nextPage,
                     icon: Icon(isLastPage ? Icons.check : Icons.arrow_forward),
-                    label: Text(isLastPage ? 'Começar' : 'Próximo'),
+                    label: Text(isLastPage ? t(pt: 'Começar', en: 'Start') : t(pt: 'Próximo', en: 'Next')),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,
@@ -239,7 +244,7 @@ class _TutorialPageState extends State<TutorialPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Principais Recursos:',
+                      AppText.tr(context, pt: 'Principais Recursos:', en: 'Key Features:'),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
