@@ -502,7 +502,6 @@ class DashboardPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.palette),
             title: Text(_t(context, pt: 'Personalização', en: 'Customization')),
-            subtitle: Text(_t(context, pt: 'Tema, cores e aparência', en: 'Theme, colors, and appearance')),
             onTap: () {
               Navigator.pop(context);
               context.push(AppRoutes.personalizacao);
@@ -566,13 +565,6 @@ class DashboardPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.assessment_outlined),
             title: Text(_t(context, pt: 'Exportar SAF-T', en: 'Export SAF-T')),
-            subtitle: Text(
-              _t(
-                context,
-                pt: 'Ficheiro fiscal XML para auditoria (AT)',
-                en: 'Fiscal XML file for tax audit (AT)',
-              ),
-            ),
             onTap: () async {
               Navigator.pop(context);
               final storage = StorageService();
@@ -608,7 +600,6 @@ class DashboardPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.upload_file),
             title: Text(_t(context, pt: 'Exportar dados', en: 'Export data')),
-            subtitle: Text(_t(context, pt: 'Clientes, produtos e faturas (JSON)', en: 'Customers, products, and invoices (JSON)')),
             onTap: () async {
               Navigator.pop(context);
               final storage = StorageService();
@@ -633,7 +624,6 @@ class DashboardPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.folder_open),
             title: Text(_t(context, pt: 'Abrir pasta de backups', en: 'Open backup folder')),
-            subtitle: Text(_t(context, pt: 'Abre a pasta onde os backups são guardados', en: 'Open the folder where backups are saved')),
             onTap: () async {
               Navigator.pop(context);
               final cfg = ref.read(configuracoesProvider).maybeWhen(
@@ -655,7 +645,6 @@ class DashboardPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.download),
             title: Text(_t(context, pt: 'Importar dados', en: 'Import data')),
-            subtitle: Text(_t(context, pt: 'Substitui clientes, produtos e faturas atuais', en: 'Replaces current customers, products, and invoices')),
             onTap: () async {
               Navigator.pop(context);
 
