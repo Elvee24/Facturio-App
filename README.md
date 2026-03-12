@@ -36,7 +36,7 @@ Aplicação de faturação empresarial, desenvolvida em Flutter, com foco em pro
   - Inclui empresa, clientes, produtos, linhas de fatura, IVA, retenções na fonte e pagamentos.
   - Tipos de documento mapeados: FT, FS, FR, NC, ND.
   - Isenções de IVA (M01–M99) com código e descrição no XML.
-  - Disponível em: Linux, Android e Web. _(iOS e macOS fora de cogitação no momento.)_
+  - Disponível em: Linux, Android e Web. _(As builds para iOS e macOS não integram o âmbito atual de desenvolvimento.)_
 - Dashboard com indicadores de negócio, total faturado, alertas de stock baixo e **resumo financeiro:**
   - Total recebido de todas as faturas.
   - Total em dívida.
@@ -107,10 +107,9 @@ Alterações consolidadas ao longo do dia:
   - Reutilização do diretório de backup já configurado.
   - 9 testes unitários adicionados em `test/saft_export_service_test.dart`.
 - **Builds de plataformas atualizados (12-03-2026)**
-- **Builds de plataformas atualizados (12-03-2026)**
   - Pacotes gerados: `Facturio.apk` (Android, 57 MB) e `Facturio.deb` (Linux, 19 MB).
   - Pacotes anteriores `Facturio.AppImage` e `Facturio.AppImage.tar.gz` removidos.
-  - iOS e macOS marcados como fora de cogitação; `SKIPPED.txt` gerado automaticamente.
+  - As builds para iOS e macOS encontram-se fora do âmbito atual de entrega; quando aplicável, é gerado um ficheiro `SKIPPED.txt` para sinalizar essa indisponibilidade.
   - Android APK instalado via ADB no dispositivo ligado.
   - `.deb` instalado localmente via `dpkg -i`.
 - **Página de Licença adicionada (12-03-2026)**
@@ -637,7 +636,7 @@ Facturio/
 
 ## Notas importantes
 
-- **iOS e macOS estão fora de cogitação no momento** — não há suporte de build para estas plataformas nesta fase do projeto.
+- **As builds para iOS e macOS não se encontram em desenvolvimento ativo nesta fase do projeto** e, por esse motivo, não estão atualmente disponíveis para distribuição.
 - Windows exige ambiente Windows para build nativa.
 - A exportação automática cria ficheiros `SKIPPED.txt` para plataformas não suportadas no sistema atual.
 - Antes de publicar na Play Store, garantir assinatura release corretamente configurada.
