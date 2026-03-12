@@ -54,6 +54,5 @@ app.*.map.json
 *.rpm
 *.tar.gz
 *.zip
-*.AppImage
 build/app/outputs/
 build/app/intermediates/

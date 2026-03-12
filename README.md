@@ -12,6 +12,7 @@ Aplicação de faturação empresarial, desenvolvida em Flutter, com foco em pro
 - [Tutorial Interativo](#tutorial-interativo)
 - [Sistema de Personalização](#sistema-de-personalização)
 - [Sistema de Pagamentos](#sistema-de-pagamentos)
+- [Exportação SAF-T](#exportação-saf-t)
 - [Acesso de administrador (PIN)](#acesso-de-administrador-pin)
 - [Exportar pacotes](#exportar-pacotes-de-instalação)
 - [Estrutura do projeto](#estrutura-relevante-do-projeto)
@@ -29,6 +30,13 @@ Aplicação de faturação empresarial, desenvolvida em Flutter, com foco em pro
   - Status visual com barra de progresso e cores (verde=pago, laranja=parcial, vermelho=não pago).
   - Validações automáticas (não permite pagamento superior ao valor em dívida).
   - Página de detalhe da fatura com histórico completo de pagamentos.
+- **Exportação SAF-T(PT) v1.04:**
+  - Geração de ficheiro XML fiscal conforme a estrutura SAF-T(PT) v1.04.
+  - Seleção de período fiscal (data início / data fim) antes de exportar.
+  - Inclui empresa, clientes, produtos, linhas de fatura, IVA, retenções na fonte e pagamentos.
+  - Tipos de documento mapeados: FT, FS, FR, NC, ND.
+  - Isenções de IVA (M01–M99) com código e descrição no XML.
+  - Disponível em: Linux, Android e Web. _(iOS e macOS fora de cogitação no momento.)_
 - Dashboard com indicadores de negócio, total faturado, alertas de stock baixo e **resumo financeiro:**
   - Total recebido de todas as faturas.
   - Total em dívida.
@@ -58,6 +66,8 @@ Aplicação de faturação empresarial, desenvolvida em Flutter, com foco em pro
 
 ## Principais novidades
 
+- **Exportação SAF-T(PT):** Novo serviço `SaftExportService` gera ficheiro XML fiscal conforme SAF-T(PT) v1.04 a partir das faturas em base de dados. Disponível no menu lateral (drawer) com seleção de período fiscal. Funciona em todas as plataformas (desktop, mobile e web). Consulte a secção [Exportação SAF-T](#exportação-saf-t) para detalhes.
+- **Exportação SAF-T(PT):** Novo serviço `SaftExportService` gera ficheiro XML fiscal conforme SAF-T(PT) v1.04 a partir das faturas em base de dados. Disponível no menu lateral (drawer) com seleção de período fiscal. Funciona em Linux, Android e Web. Consulte a secção [Exportação SAF-T](#exportação-saf-t) para detalhes.
 - Novo sistema de ícones e splash screen, com visual unificado da marca.
 - **Sistema de personalização completo:** 10 temas predefinidos, cores personalizadas, modo claro/escuro/sistema, 6 ícones, tamanho de texto ajustável (80%-140%) e Material You experimental. Todas as preferências salvas automaticamente. Inclui script de instalação de ícone para Linux.
 - **Sistema de tutorial interativo:** Tutorial de boas-vindas com 8 slides explicativos sobre as principais funcionalidades, navegação intuitiva (pular, voltar, próximo) e opção de resetar nas configurações.
@@ -70,15 +80,43 @@ Aplicação de faturação empresarial, desenvolvida em Flutter, com foco em pro
 
 ### Melhorias Recentes
 
+- ✅ **Exportação SAF-T(PT) v1.04:** Ficheiro XML fiscal completo com empresa, clientes, produtos, faturas e pagamentos. Seleção de período fiscal, validação de NIF obrigatória, disponível em todas as plataformas.
+- ✅ **Exportação SAF-T(PT) v1.04:** Ficheiro XML fiscal completo com empresa, clientes, produtos, faturas e pagamentos. Seleção de período fiscal, validação de NIF obrigatória, disponível em Android, Linux e Web.
 - ✅ **Padronização de espaçamentos:** Todo o código agora segue rigorosamente o grid de 8dp do Material Design (8, 16, 24, 32px).
 - ✅ **Correção de overflow na splash screen:** Adicionado scroll para dispositivos com telas pequenas.
 - ✅ **Correção de texto fora da caixa no dashboard:** Cards e chips financeiros agora adaptam-se a ecrãs pequenos e fontes maiores com `Wrap`, `FittedBox` e `ellipsis`.
 - ✅ **Correção de erros de tipo no dashboard:** Corrigidos nomes de chaves no resumo de pagamentos (`faturasCompletamentePagas`, `faturasParcialmentePagas`).
 - ✅ **Compatibilidade Flutter 3.27+:** Corrigida depreciação de `Color.value` para `Color.toARGB32()`.
 - ✅ **Sistema de ícones instalável:** Script bash para instalação automática do ícone no ambiente Linux desktop.
-- ✅ **Ícones mobile atualizados:** Aplicação de ícones no Android e iOS com integração nativa (Android launcher aliases + iOS alternate icons).
-- ✅ **Importação de backup no mobile corrigida:** Seleção de ficheiros mais robusta em Android/iOS com validação de extensão no restauro.
+- ✅ **Ícones mobile atualizados:** Aplicação de ícones no Android com integração nativa (Android launcher aliases).
+- ✅ **Importação de backup no mobile corrigida:** Seleção de ficheiros mais robusta em Android com validação de extensão no restauro.
 - ✅ **Correção de bloqueio nas Configurações da Empresa:** Inicialização segura do `AdminAuthService` para evitar `LateInitializationError` ao validar PIN.
+
+### Registo Diário (12-03-2026)
+
+Alterações consolidadas ao longo do dia:
+
+- **Exportação SAF-T(PT) implementada**
+  - Novo serviço `lib/core/services/saft_export_service.dart` com geração de XML SAF-T(PT) v1.04.
+  - Header com dados completos da empresa (NIF, morada, período fiscal, versão do software).
+  - MasterFiles com Supplier (empresa emissora), Customers (clientes nas faturas do período) e Products (produtos utilizados).
+  - SourceDocuments → SalesInvoices com todas as linhas de fatura, IVA por linha, retenções na fonte e registos de pagamento.
+  - Validação obrigatória de NIF da empresa e morada antes de exportar.
+  - Diálogo de seleção de período (data início / data fim) integrado no drawer.
+  - Exportação multiplataforma: Linux (ficheiro + `chmod 600`), Windows (ficheiro), Android (share sheet), Web (download).
+  - Reutilização do diretório de backup já configurado.
+  - 9 testes unitários adicionados em `test/saft_export_service_test.dart`.
+- **Builds de plataformas atualizados (12-03-2026)**
+- **Builds de plataformas atualizados (12-03-2026)**
+  - Pacotes gerados: `Facturio.apk` (Android, 57 MB) e `Facturio.deb` (Linux, 19 MB).
+  - Pacotes anteriores `Facturio.AppImage` e `Facturio.AppImage.tar.gz` removidos.
+  - iOS e macOS marcados como fora de cogitação; `SKIPPED.txt` gerado automaticamente.
+  - Android APK instalado via ADB no dispositivo ligado.
+  - `.deb` instalado localmente via `dpkg -i`.
+- **Página de Licença adicionada (12-03-2026)**
+  - Nova página `lib/features/sobre/presentation/pages/licenca_page.dart` com texto MIT em PT/EN.
+  - Idioma selecionado automaticamente conforme a definição de idioma da app (`ThemeService.getAppLanguage()`).
+  - Acessível através do drawer do dashboard (ícone de martelo, entrada "Licença / Licence").
 
 ### Entrega Mobile (Março 2026)
 
@@ -108,9 +146,7 @@ Resumo completo das alterações implementadas nesta entrega:
   - Teste `test/backup_service_e2e_test.dart` aprovado (`3/3`).
   - Verificação em Android sem `FATAL EXCEPTION`/`LateInitializationError` após as correções.
 
-### Registo Diário (11-03-2026)
-
-Alterações consolidadas ao longo do dia:
+### Entrega Anterior (11-03-2026)
 
 - **Correções funcionais entregues**
   - Ícone Android atualizado e validado no launcher.
@@ -133,11 +169,11 @@ Alterações consolidadas ao longo do dia:
 - **Assets e tooling**
   - Atualização de ícones em `assets/icons/*`, `web/favicon.png` e `favicon.ico`.
   - Script `create_icons.py` expandido para gerar ícones primários e alternativos de forma consistente.
-- **Validação executada hoje**
+- **Validação executada**
   - `flutter analyze` nos ficheiros críticos: sem issues.
   - `flutter test test/backup_service_e2e_test.dart`: `3/3` testes passados.
   - Verificação de logs Android (`adb logcat`): sem crash fatal da app no cenário corrigido.
-- **Commits do dia**
+- **Commits**
   - `7e6e7a2` - `fix(mobile): corrigir ícones, backup import e acesso por PIN`
   - `264d7ba` - `docs(readme): detalhar todas as alterações da entrega mobile`
 
@@ -171,7 +207,7 @@ Todas as dependências são instaladas automaticamente com `flutter pub get`.
 
 ## Instalação correta (passo a passo)
 
-Guia por sistema operativo (Linux, Windows, macOS, iOS, Android e Web): `INSTALACAO_MULTIPLATAFORMA.md`
+Guia por sistema operativo (Linux, Windows, Android e Web): `INSTALACAO_MULTIPLATAFORMA.md`
 
 1. Entrar na pasta do projeto:
 
@@ -446,6 +482,78 @@ Os pagamentos são persistidos no Hive com TypeId 3 e incluem:
 
 Consulte o ficheiro [lib/features/pagamentos/EXEMPLOS_USO.md](lib/features/pagamentos/EXEMPLOS_USO.md) para exemplos de código e casos de uso avançados.
 
+## Exportação SAF-T
+
+O SAF-T (Standard Audit File for Tax) é um formato de ficheiro XML exigido pela Autoridade Tributária e Aduaneira (AT) em Portugal para auditoria e controlo fiscal.
+
+### O que é gerado
+
+O ficheiro segue a estrutura **SAF-T(PT) v1.04_01** e inclui:
+
+- **Header:** Dados da empresa, versão do software, período fiscal, data/hora de geração.
+- **MasterFiles:**
+  - Dados do emitente (Supplier) — NIF, nome, morada.
+  - Todos os clientes (Customers) que constam em faturas no período selecionado.
+  - Todos os produtos/serviços (Products) faturados no período.
+- **SourceDocuments → SalesInvoices:**
+  - Cada fatura com ATCUD, hash, estado, tipo de documento, data, cliente e linhas.
+  - Linhas com quantidade, preço unitário, desconto, totais e bloco `<Tax>` completo.
+  - Retenções na fonte (`<WithholdingTax>`) quando aplicável.
+  - Registos de pagamento (`<Settlement>`) por fatura.
+
+### Tipos de documento suportados
+
+| Código | Descrição             |
+|--------|-----------------------|
+| `FT`   | Fatura                |
+| `FS`   | Fatura Simplificada   |
+| `FR`   | Fatura-Recibo         |
+| `NC`   | Nota de Crédito       |
+| `ND`   | Nota de Débito        |
+
+### Códigos de IVA suportados
+
+| Código | Taxa (exemplo) | Descrição                 |
+|--------|----------------|---------------------------|
+| `NOR`  | 23%            | Taxa normal               |
+| `INT`  | 13%            | Taxa intermédia           |
+| `RED`  | 6%             | Taxa reduzida             |
+| `ISE`  | 0%             | Isento (com motivo Mxx)   |
+
+### Meios de pagamento mapeados
+
+`NU` (Numerário), `TB` (Transferência), `MB` (Multibanco/MB Way), `OU` (Outro), `DD` (Débito direto), `CC` (Cartão de crédito), `CD` (Cartão de débito), `CH` (Cheque).
+
+### Como usar
+
+1. Abra o menu lateral (≡) na aplicação.
+2. Toque em **Exportar SAF-T**.
+3. Selecione a **data de início** e a **data de fim** do período fiscal.
+4. Prima **Exportar**.
+
+O ficheiro gerado tem o nome `Facturio_SAFT_YYYYMMDD_YYYYMMDD_timestamp.xml`.
+
+> ⚠️ **Nota legal:** O ficheiro gerado destina-se a uso interno e auditoria. Para entrega formal à AT (e-fatura, SAFTPT), a aplicação precisa de certificação AT oficial, que não está incluída nesta versão.
+
+### Requisitos
+
+- NIF da empresa configurado e válido nas **Configurações da Empresa**.
+- Morada, localidade e país da empresa preenchidos.
+
+### Plataformas
+
+| Plataforma | Comportamento                                              |
+|------------|------------------------------------------------------------|
+| Linux       | Guarda o ficheiro na pasta de backup com `chmod 600`      |
+| Windows    | Guarda o ficheiro na pasta de backup                       |
+| Android     | Abre o share sheet para partilhar/guardar o ficheiro      |
+| Web        | Descarrega o ficheiro diretamente pelo browser            |
+
+### Ficheiros relevantes
+
+- `lib/core/services/saft_export_service.dart` — serviço de geração e exportação
+- `test/saft_export_service_test.dart` — 9 testes unitários
+
 ## Acesso de administrador (PIN)
 
 - O menu `Configurações da Empresa` pede PIN de administrador.
@@ -529,7 +637,7 @@ Facturio/
 
 ## Notas importantes
 
-- iOS e macOS exigem ambiente macOS com Xcode para build nativa.
+- **iOS e macOS estão fora de cogitação no momento** — não há suporte de build para estas plataformas nesta fase do projeto.
 - Windows exige ambiente Windows para build nativa.
 - A exportação automática cria ficheiros `SKIPPED.txt` para plataformas não suportadas no sistema atual.
 - Antes de publicar na Play Store, garantir assinatura release corretamente configurada.

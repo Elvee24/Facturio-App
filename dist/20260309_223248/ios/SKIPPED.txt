@@ -1,3 +1,0 @@
-Plataforma: ios
-Motivo: Build iOS requer macOS/Xcode.
-Data: seg 09 mar 2026 22:35:36 WET

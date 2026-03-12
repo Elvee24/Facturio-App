@@ -1,16 +1,15 @@
 # Facturio - Instalação e Build Multi-Plataforma
 
-Este guia complementa o `INSTALACAO_LINUX.md` e descreve como preparar cada sistema operativo suportado pelo Flutter para gerar artefatos do Facturio.
+Este guia complementa o `INSTALACAO_LINUX.md` e descreve o fluxo atualmente suportado para gerar artefatos do Facturio.
 
 ## Matriz de Suporte por Host
 
 - **Host Linux**: build `linux`, `apk`, `appbundle`, `web`
 - **Host Windows**: build `windows`, `apk`, `appbundle`, `web`
-- **Host macOS**: build `macos`, `ios`, `apk`, `appbundle`, `web`
 
 Notas importantes:
-- `flutter build ios` e `flutter build macos` exigem macOS com Xcode.
 - `flutter build windows` exige host Windows.
+- iOS e macOS estão fora de cogitação no momento e não fazem parte do fluxo atual de entrega.
 
 ## 1) Preparar Dependencias
 
@@ -46,23 +45,6 @@ Android (opcional):
 - Aceitar licencas:
 
 ```powershell
-flutter doctor --android-licenses
-```
-
-### macOS
-
-```bash
-brew update
-brew install --cask xcode
-brew install --cask android-studio
-```
-
-Depois:
-
-```bash
-sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-sudo xcodebuild -runFirstLaunch
-sudo xcodebuild -license accept
 flutter doctor --android-licenses
 ```
 
@@ -118,27 +100,6 @@ flutter build windows --release
 Artefato:
 - `build\windows\x64\runner\Release\`
 
-### macOS (apenas em host macOS)
-
-```bash
-flutter config --enable-macos-desktop
-flutter build macos --release
-```
-
-Artefato:
-- `build/macos/Build/Products/Release/`
-
-### iOS (apenas em host macOS)
-
-```bash
-flutter build ios --release
-```
-
-Artefato principal:
-- `build/ios/iphoneos/Runner.app`
-
-Para distribuicao em App Store/TestFlight, gerar `.ipa` no Xcode (Archive/Distribute).
-
 ## 4) Validacao Rapida
 
 ```bash
@@ -161,16 +122,15 @@ Ou via VS Code task:
 ## 6) Problemas Comuns
 
 - **"Build windows is only supported on Windows hosts"**: executar em maquina Windows.
-- **`flutter build ios` falha em Linux/Windows**: executar em macOS com Xcode.
 - **Licencas Android pendentes**: correr `flutter doctor --android-licenses`.
 - **Falta toolchain desktop**: confirmar `flutter doctor -v` e instalar dependencias do host.
+- **Build iOS/macOS pedida**: fora de cogitação no momento neste projeto.
 
 ## 7) Scripts Prontos por Host
 
 Foram adicionados scripts de automacao no root do projeto:
 
 - Linux: `./build_linux.sh`
-- macOS: `./build_macos.sh`
 - Windows (PowerShell): `./build_windows.ps1`
 
 O que fazem:
@@ -195,8 +155,8 @@ O que fazem:
 - Android SDK configurado (se precisares APK/AAB)
 - Comando: `powershell -ExecutionPolicy Bypass -File .\build_windows.ps1`
 
-### macOS
+### Estado Atual
 
-- Xcode instalado e selecionado com `xcode-select`
-- Android SDK configurado (se precisares APK/AAB)
-- Comando: `./build_macos.sh`
+- Linux, Android e Web fazem parte do fluxo ativo.
+- Windows mantém suporte de build apenas em host Windows.
+- iOS e macOS estão fora de cogitação no momento.

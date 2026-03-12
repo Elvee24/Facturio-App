@@ -11,6 +11,7 @@ import '../features/faturas/presentation/pages/fatura_detail_page.dart';
 import '../features/configuracoes/presentation/pages/configuracoes_page.dart';
 import '../features/tutorial/presentation/pages/tutorial_page.dart';
 import '../features/personalizacao/presentation/pages/personalizacao_page.dart';
+import '../features/sobre/presentation/pages/licenca_page.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -25,6 +26,7 @@ class AppRoutes {
   static const String faturaDetail = '/faturas/detail';
   static const String configuracoes = '/configuracoes';
   static const String personalizacao = '/personalizacao';
+  static const String licenca = '/licenca';
 
   static final GoRouter router = GoRouter(
     initialLocation: splash,
@@ -91,6 +93,10 @@ class AppRoutes {
       GoRoute(
         path: personalizacao,
         builder: (context, state) => const PersonalizacaoPage(),
+      ),
+      GoRoute(
+        path: licenca,
+        builder: (context, state) => const LicencaPage(),
       ),
     ],
   );

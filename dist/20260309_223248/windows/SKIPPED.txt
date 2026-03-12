@@ -1,3 +1,0 @@
-Plataforma: windows
-Motivo: Build Windows requer ambiente Windows.
-Data: seg 09 mar 2026 22:35:36 WET

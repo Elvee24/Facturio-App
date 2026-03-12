@@ -7,6 +7,7 @@ import '../../../../core/i18n/app_text.dart';
 import '../../../../core/providers/theme_provider.dart';
 import '../../../../core/services/admin_auth_service.dart';
 import '../../../../core/services/backup_service.dart';
+import '../../../../core/services/saft_export_service.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/services/pagamentos_service.dart';
 import '../../../../core/utils/ui_helpers.dart';
@@ -563,6 +564,48 @@ class DashboardPage extends ConsumerWidget {
           ),
           const Divider(height: 1),
           ListTile(
+            leading: const Icon(Icons.assessment_outlined),
+            title: Text(_t(context, pt: 'Exportar SAF-T', en: 'Export SAF-T')),
+            subtitle: Text(
+              _t(
+                context,
+                pt: 'Ficheiro fiscal XML para auditoria (AT)',
+                en: 'Fiscal XML file for tax audit (AT)',
+              ),
+            ),
+            onTap: () async {
+              Navigator.pop(context);
+              final storage = StorageService();
+              final periodo = await _mostrarDialogoSaft(context);
+              if (periodo == null) return;
+              if (!context.mounted) return;
+              final resultado = await SaftExportService.exportarSaft(
+                storage: storage,
+                periodo: periodo,
+              );
+              if (!context.mounted) return;
+              if (resultado.sucesso) {
+                UiHelpers.mostrarSnackBar(
+                  context,
+                  mensagem: _t(
+                    context,
+                    pt: 'SAF-T exportado: ${resultado.totalFaturas} fatura(s). ${resultado.mensagem}',
+                    en: 'SAF-T exported: ${resultado.totalFaturas} invoice(s). ${resultado.mensagem}',
+                  ),
+                  tipo: TipoSnackBar.sucesso,
+                  duracao: const Duration(seconds: 6),
+                );
+              } else {
+                UiHelpers.mostrarSnackBar(
+                  context,
+                  mensagem: resultado.mensagem,
+                  tipo: TipoSnackBar.erro,
+                  duracao: const Duration(seconds: 6),
+                );
+              }
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.upload_file),
             title: Text(_t(context, pt: 'Exportar dados', en: 'Export data')),
             subtitle: Text(_t(context, pt: 'Clientes, produtos e faturas (JSON)', en: 'Customers, products, and invoices (JSON)')),
@@ -672,8 +715,140 @@ class DashboardPage extends ConsumerWidget {
               }
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.gavel_outlined),
+            title: Text(_t(context, pt: 'Licença', en: 'Licence')),
+            subtitle: Text(_t(context, pt: 'MIT License – Facturio 2026', en: 'MIT License – Facturio 2026')),
+            onTap: () {
+              Navigator.pop(context);
+              context.push(AppRoutes.licenca);
+            },
+          ),
         ],
       ),
+    );
+  }
+
+  Future<SaftPeriodo?> _mostrarDialogoSaft(BuildContext context) async {
+    DateTime inicio = DateTime(DateTime.now().year, 1, 1);
+    DateTime fim = DateTime(DateTime.now().year, 12, 31);
+
+    return showDialog<SaftPeriodo>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setStateDlg) {
+            final colors = Theme.of(ctx).colorScheme;
+            final formatoData = DateFormat('dd/MM/yyyy');
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              titlePadding: EdgeInsets.zero,
+              title: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [colors.primary, colors.secondary],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.assessment_outlined, color: colors.onPrimary, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _t(ctx, pt: 'Exportar SAF-T', en: 'Export SAF-T'),
+                        style: TextStyle(
+                          color: colors.onPrimary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
+                    Text(
+                      _t(
+                        ctx,
+                        pt: 'Selecione o período fiscal para exportar as faturas em formato SAF-T(PT).\n\n'
+                            '⚠️ Este ficheiro é para uso em software certificado AT. Para submissão oficial, o software deve ser certificado pela Autoridade Tributária.',
+                        en: 'Select the fiscal period to export invoices in SAF-T(PT) format.\n\n'
+                            '⚠️ This file is for use with AT-certified software. For official submission, the software must be certified by the Tax Authority.',
+                      ),
+                      style: TextStyle(fontSize: 14, color: colors.onSurface.withValues(alpha: 0.8)),
+                    ),
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.calendar_today, size: 18),
+                      label: Text(
+                        '${_t(ctx, pt: 'Data início', en: 'Start date')}: ${formatoData.format(inicio)}',
+                      ),
+                      onPressed: () async {
+                        final nova = await showDatePicker(
+                          context: ctx,
+                          initialDate: inicio,
+                          firstDate: DateTime(2000),
+                          lastDate: fim,
+                          locale: const Locale('pt', 'PT'),
+                        );
+                        if (nova != null) setStateDlg(() => inicio = nova);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.event, size: 18),
+                      label: Text(
+                        '${_t(ctx, pt: 'Data fim', en: 'End date')}: ${formatoData.format(fim)}',
+                      ),
+                      onPressed: () async {
+                        final nova = await showDatePicker(
+                          context: ctx,
+                          initialDate: fim,
+                          firstDate: inicio,
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          locale: const Locale('pt', 'PT'),
+                        );
+                        if (nova != null) setStateDlg(() => fim = nova);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(_t(ctx, pt: 'Cancelar', en: 'Cancel')),
+                ),
+                FilledButton.icon(
+                  icon: const Icon(Icons.download),
+                  onPressed: () {
+                    Navigator.of(ctx).pop(
+                      SaftPeriodo(dataInicio: inicio, dataFim: fim),
+                    );
+                  },
+                  label: Text(_t(ctx, pt: 'Exportar', en: 'Export')),
+                ),
+              ],
+              actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            );
+          },
+        );
+      },
     );
   }
 }

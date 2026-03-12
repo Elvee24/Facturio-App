@@ -1,6 +1,6 @@
 # Facturio - Instalação Linux
 
-> Para builds em Windows, macOS e iOS, consulte tambem: `INSTALACAO_MULTIPLATAFORMA.md`
+> Para Android, Windows e Web, consulte tambem: `INSTALACAO_MULTIPLATAFORMA.md`
 
 ## Instalação no Sistema
 
@@ -130,7 +130,8 @@ Terminal → Run Task → Facturio: Exportar pacotes
 ```
 
 Resultado: Pasta `dist/YYYYMMDD_HHMMSS/` com:
-- **Android:** app-release.apk e app-release.aab
+- **Android:** `Facturio.apk` e `Facturio.aab`
 - **Web:** Build web (distribuível em servidores)
-- **Linux:** Binary e assets para distribuição
-- **iOS/macOS/Windows:** Ficheiros de configuração (requer respectivos ambientes)
+- **Linux:** bundle da aplicação e pacote `Facturio.deb`
+- **Windows:** ficheiro `SKIPPED.txt` quando a build não é suportada no host atual
+- **iOS/macOS:** fora de cogitação no momento
